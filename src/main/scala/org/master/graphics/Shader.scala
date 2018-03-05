@@ -16,32 +16,23 @@ object ShaderType extends Enumeration {
   val Fragment: graphics.ShaderType.Value = Value(GL_FRAGMENT_SHADER)
 }
 
-class Shader(val ptr: Int, `type`: ShaderType.Value) {
-  def destroy(): Unit = Shader.destroy(ptr)
+class Shader(val id: Int, `type`: ShaderType.Value) {
+  def destroy(): Unit = glDeleteShader(id) // TODO: need IMPLEMENT ?
 }
 
 object Shader {
   def apply(ptr: Int, `type`: ShaderType.Value) = new Shader(ptr, `type`)
-  def destroy(ptr: Int): Unit = ARBShaderObjects.glDeleteObjectARB(ptr)
 
   @throws[Exception]
   def create(filename: String, shaderType: ShaderType.ShaderType): Shader = {
-    var ptr = 0
-    try {
-      ptr = glCreateShader(shaderType.id)
-      if (ptr == 0) throw stackTraceError(filename, ptr)
+    val shader = Shader(glCreateShader(shaderType.id), shaderType)
+    if (shader.id == 0) throw stackTraceError(filename, shader.id)
 
-      glShaderSource(ptr, Source.fromFile(filename).getLines.mkString)
-      glCompileShader(ptr)
+    glShaderSource(shader.id, Source.fromFile(filename).mkString)
+    glCompileShader(shader.id)
 
-      if (glGetShaderi(ptr, GL_COMPILE_STATUS) == GL11.GL_FALSE) throw stackTraceError(filename, ptr)
-
-      Shader(ptr, shaderType)
-    } catch {
-      case e: Exception =>
-        destroy(ptr)
-        throw e
-    }
+    if (glGetShaderi(shader.id, GL_COMPILE_STATUS) == GL11.GL_FALSE) throw stackTraceError(filename, shader.id)
+    shader
   }
   def stackTraceError(filename: String, ptr: Int) = new RuntimeException("compilation error for shader [" + filename + "]. Reason: " + glGetShaderInfoLog(ptr, 1000))
 }
