@@ -7,21 +7,13 @@ package org.master.core
 import org.lwjgl
 import org.master.graphics.Graphics
 
-abstract class CoreUnit {
-  def init(): Boolean
-  def destroy(): Unit = {}
-  def update(dt: Double): Unit = {}
-}
-
 class Core {
   def run(): Unit = Utils.logging(s"Master core run with version ${lwjgl.Version.getVersion}!") {
-    Core.units.foreach(init)
+    Core.units.foreach(CoreUnit.init)
     Window.loop(update)
-    Core.runits.foreach(destroy)
+    Core.runits.foreach(CoreUnit.destroy)
   }
   def update(delta: Double): Unit = Core.runits.foreach(_.update(delta))
-  private def init(unit: CoreUnit): Unit = unit.init()
-  private def destroy(unit: CoreUnit): Unit = unit.destroy()
 }
 
 object Core {

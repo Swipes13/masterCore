@@ -1,37 +1,44 @@
 package org.master.graphics
 
-import org.lwjgl.opengl.{GL11, GL15, GL20, GL30}
+import org.lwjgl.opengl.GL11._
+import org.lwjgl.opengl.GL20._
+import org.lwjgl.opengl.GL30._
 
-class Vao(val vertexCount: Int, val length: Int) {
-  val id: Int = GL30.glGenVertexArrays
+object DrawType extends Enumeration {
+  type DrawType = Value
+  val None = 0
+  val LineLoop: DrawType.Value = Value(GL_LINE_LOOP)
+  val Triangles: DrawType.Value = Value(GL_TRIANGLES)
+}
 
-  def draw(): Unit = {
-    bind()
-    enableAttribs()
-    GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, vertexCount)
+class Vao(val drawType: DrawType.Value, val vertexCount: Int, val length: Int) {
+  val id: Int = glGenVertexArrays
+  var vbos = Array.empty[Vbo]
+
+  def render(): Unit = {
+    bind().enableAttributes()
+    vbos.foreach(v => v.bind())
+    draw()
   }
-
-  def enableAttribs(): Unit = (0 until length).foreach(i => GL20.glEnableVertexAttribArray(i))
-  def bind(): Unit = GL30.glBindVertexArray(id)
+  def enableAttributes(): Vao = { (0 until length).foreach(i => glEnableVertexAttribArray(i)); this }
+  def bind(): Vao = { glBindVertexArray(id); this }
+  def draw(): Vao = { glDrawArrays(drawType.id, 0, vertexCount); this }
 }
 
 object Vao {
-  val FLOAT_BYTES = java.lang.Float.SIZE   / java.lang.Byte.SIZE
-  val INT_BYTES   = java.lang.Integer.SIZE / java.lang.Byte.SIZE
-  val VEC4_BYTES  = 4 * FLOAT_BYTES
-
-  def create(fbs: Array[FloatBuffer], vertexCount: Int): Vao = {
-    GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0)
-
-    val vao = new Vao(vertexCount, fbs.length)
-    vao.bind()
-    vao.enableAttribs()
-    fbs.zipWithIndex.foreach { case (fb, index) =>
-      fb.bind()
-      GL20.glVertexAttribPointer(index, fb.length, GL11.GL_FLOAT, false, VEC4_BYTES, 0)
-    }
-    GL30.glBindVertexArray(0)
-    GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0)
+  def create(drawType: DrawType.Value, vertexCount: Int, fbs: (Array[Float], Int)*): Vao = {
+    val vao = new Vao(drawType, vertexCount, fbs.length).bind()
+    vao.vbos = fbs.zipWithIndex.map { case ((floats, count), index) =>
+      val vbo = Vbo.create(floats)
+      glVertexAttribPointer(index, count, GL_FLOAT, false, 0, 0)
+      glEnableVertexAttribArray(index)
+      vbo
+    }.toArray
     vao
+  }
+  def render(vao: Vao): Unit = vao.render()
+  def clear(vao: Vao): Unit = {
+    vao.vbos.foreach(Vbo.clear)
+    glDeleteVertexArrays(vao.id)
   }
 }
