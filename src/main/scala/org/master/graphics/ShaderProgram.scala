@@ -5,10 +5,13 @@ import org.lwjgl.opengl.GL11._
 
 class ShaderProgram(val shaders: Array[Shader]) {
   val id: Int = glCreateProgram
+  private var _vaos = Array.empty[Vao]
 
-  def use(): Unit = glUseProgram(id)
+  def render(): Unit = use()._vaos.foreach(Vao.render)
+  def use(): ShaderProgram = { glUseProgram(id); this }
   def validate(): Unit = ShaderProgram.check(glValidateProgram(id), id, GL_VALIDATE_STATUS, "validate shader error. ")
   def link(): Unit = ShaderProgram.check(glLinkProgram(id), id, GL_LINK_STATUS, "link shader error. ")
+  def addVao(vao: Vao): Unit = _vaos = _vaos :+ vao
 }
 
 object ShaderProgram {
@@ -26,8 +29,10 @@ object ShaderProgram {
   }
   def clear(): Unit = glUseProgram(0)
   def clear(p: ShaderProgram): Unit = {
+    p._vaos.foreach(Vao.clear)
     p.shaders.foreach(s => s.detach(p.id))
     glDeleteProgram(p.id)
     p.shaders.foreach(Shader.clear)
   }
+  def render(sp: ShaderProgram): Unit = sp.render()
 }

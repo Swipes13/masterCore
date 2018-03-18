@@ -10,7 +10,6 @@ import org.master.core.{CoreUnit, Utils, Window}
 
 class Graphics extends CoreUnit {
   private var _shaderPrograms = Array.empty[ShaderProgram]
-  private var _vaos = Array.empty[Vao]
 
   override def init(): Boolean = Utils.logging() {
     GL.createCapabilities
@@ -28,38 +27,37 @@ class Graphics extends CoreUnit {
 //    glDepthFunc(GL_LEQUAL)
 //    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
     prepareShaders()
-    prepareVaos()
     true
   }
 
   def prepareShaders(): Unit = {
     val b = scala.collection.mutable.ListBuffer.empty[ShaderProgram]
-     b += ShaderProgram.create(Array(
+    val colorSp = ShaderProgram.create(Array(
        Shader.create("shaders/simplev.glsl", ShaderType.Vertex),
        Shader.create("shaders/simplef.glsl", ShaderType.Fragment)
-     ), Array("vpos, vcolor"))
+    ), Array("vpos, vcolor"))
+    prepareVaos(colorSp)
+    b += colorSp
     _shaderPrograms = b.toArray
   }
 
-  def prepareVaos(): Unit = {
-    val b = scala.collection.mutable.ListBuffer.empty[Vao]
-    val positions = (Array(-1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f,  1.0f, 0.0f), 3)
-    val colors = (Array(0f, 0f, 1f, 1f, 0f, 0f, 0f, 1f, 0f), 3)
-    b += Vao.create(DrawType.Triangles, 3, positions, colors)
-    _vaos = b.toArray
+  def prepareVaos(program: ShaderProgram): Unit = {
+    val positions = (Array(-1f, -1f, 0f, 1f, -1f, 0f, 0f,  1f, 0f, 1f, 1f, 0f), 3)
+    val colors = (Array(0f, 0f, 1f, 1f, 0f, 0f, 0f, 1f, 0f, 1f, 1f, 0f), 3)
+    program.addVao(Vao.create(DrawType.Triangles, 6, Array(positions, colors), Array(0, 1, 2, 2, 1, 3)))
+
+    val lineP = (Array(-1f, -1f, 0f, 0f,  1f, 0f, -1f, 1f, 0f), 3)
+    val lineC = (Array(1f, 1f, 0f, 0f, 0f, 1f, 0f, 1f, 1f), 3)
+    program.addVao(Vao.create(DrawType.Triangles, 3, Array(lineP, lineC)))
   }
 
   override def update(dt: Double): Unit = {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    _shaderPrograms.foreach(p => {
-      p.use()
-      _vaos.foreach(Vao.render)
-    })
+    _shaderPrograms.foreach(ShaderProgram.render)
   }
 
   override def destroy(): Unit = {
     ShaderProgram.clear()
-    _vaos.foreach(Vao.clear)
     _shaderPrograms.foreach(ShaderProgram.clear)
   }
 }
