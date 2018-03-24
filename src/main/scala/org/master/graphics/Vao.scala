@@ -34,15 +34,26 @@ class IVao(drawType: DrawType.Value, vertexCount: Int, length: Int) extends Vao(
 object Vao {
   def create(drawType: DrawType.Value, vertexCount: Int, fbs: Array[(Array[Float], Int)], indexes: Array[Byte] = null): Vao = {
     val vao = (if (indexes == null) new Vao(drawType, vertexCount, fbs.length) else new IVao(drawType, vertexCount, fbs.length)).bind()
-    vao.vbos = { fbs.zipWithIndex.map { case ((floats, count), index) =>
+    vao.vbos = fbs.zipWithIndex.map { case ((floats, count), index) =>
       val vbo = Vbo.create(BufferType.Vertex, floats)
       glVertexAttribPointer(index, count, GL_FLOAT, false, 0, 0)
       glEnableVertexAttribArray(index)
       vbo
-    } :+ createIVbo(indexes) }.filter(_ != null)
+    } ++ createIVbo(indexes).toList
     vao
   }
-  private def createIVbo(indexes: Array[Byte]) = if (indexes == null) null else Vbo.create(Vbo.prepareBuffer(indexes))
+//  def create(drawType: DrawType.Value, vertexes: Array[Vertex]): Vao = Vao.create(drawType, vertexes, null)
+  def createInterleaved(drawType: DrawType.Value, vertexes: Array[Vertex], indexes: Array[Byte] = null): Vao = {
+    val vao = (if (indexes == null) new Vao(drawType, vertexes.length, Vertex.elemCount(vertexes)) else new IVao(drawType, indexes.length, Vertex.elemCount(vertexes))).bind()
+    val floats = vertexes.flatMap(vs => vs.elems.flatMap(v => v.values))
+    val vbo = Vbo.create(BufferType.Vertex, floats)
+
+    val v = vertexes.head
+    v.elems.zipWithIndex.foreach { case (elem, i) => glVertexAttribPointer(i, elem.count, GL_FLOAT, false, v.stride, elem.offset) }
+    vao.vbos = Array(vbo) ++ createIVbo(indexes).toList
+    vao
+  }
+  private def createIVbo(indexes: Array[Byte]) = Option(indexes).map(i => Vbo.create(Vbo.prepareBuffer(i)))
   def render(vao: Vao): Unit = vao.render()
   def clear(vao: Vao): Unit = {
     vao.vbos.foreach(Vbo.clear)

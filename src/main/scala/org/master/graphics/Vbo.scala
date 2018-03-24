@@ -28,7 +28,7 @@ object Vbo {
     buffer.put(v).flip()
     buffer
   }
-  private def prepareBuffer(v: Array[Float]) = {
+  def prepareBuffer(v: Array[Float]): FloatBuffer = {
     val buffer = BufferUtils.createFloatBuffer(v.length)
     buffer.put(v).flip()
     buffer
