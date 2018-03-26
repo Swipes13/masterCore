@@ -4,7 +4,7 @@ import java.nio.{Buffer, FloatBuffer}
 
 import org.joml.{Matrix4f, Vector3f}
 import org.lwjgl.BufferUtils
-import org.lwjgl.opengl.GL20
+import org.lwjgl.opengl.GL20._
 import org.master.core.Window
 
 trait Uniform {
@@ -17,9 +17,9 @@ class Matrix4fUniform extends Matrix4f with Uniform {
   private val buffer: FloatBuffer = BufferUtils.createFloatBuffer(16)
   private def updateBuffer(): FloatBuffer = { this.set(buffer); buffer.flip(); buffer }
 
-  def setInShaderProgram(location: Int = this.location): Unit = GL20.glUniformMatrix4fv(location, false, updateBuffer())
+  def render(location: Int = this.location): Unit = glUniformMatrix4fv(location, false, updateBuffer())
   def withName(name: String): Matrix4fUniform = { this.name = name; this }
-  def withLocation(location: Int): Matrix4fUniform = { this.name = name; this }
+  def withLocation(location: Int): Matrix4fUniform = { this.location = Some(location).getOrElse(0); this }
 }
 
 object Matrix4fUniform {

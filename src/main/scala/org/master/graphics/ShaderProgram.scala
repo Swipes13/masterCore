@@ -3,9 +3,9 @@ package org.master.graphics
 import org.lwjgl.opengl.GL20._
 import org.lwjgl.opengl.GL11._
 
-class ShaderProgram(val shaders: Array[Shader], val uniforms: Array[String]) {
+class ShaderProgram(val shaders: Array[Shader]) {
   val id: Int = glCreateProgram
-  val uniformLocations: Map[String, Int] = uniforms.map(u => (u, glGetUniformLocation(id, u))).toMap[String, Int]
+  var uniformLocations: Map[String, Int] = _
   private var _vaos = Array.empty[Vao]
 
   def render(): Unit = use()._vaos.foreach(Vao.render)
@@ -13,15 +13,17 @@ class ShaderProgram(val shaders: Array[Shader], val uniforms: Array[String]) {
   def validate(): Unit = ShaderProgram.check(glValidateProgram(id), id, GL_VALIDATE_STATUS, "validate shader error. ")
   def link(): Unit = ShaderProgram.check(glLinkProgram(id), id, GL_LINK_STATUS, "link shader error. ")
   def addVao(vao: Vao): Unit = _vaos = _vaos :+ vao
+  def prepareUniforms(uniforms: Array[String]): Unit = uniformLocations = uniforms.map(u => (u, glGetUniformLocation(id, u))).toMap[String, Int]
 }
 
 object ShaderProgram {
   @throws[Exception]
   def create(shaders: Array[Shader], attributes: Array[String], uniforms: Array[String] = Array.empty): ShaderProgram = {
-    val program = new ShaderProgram(shaders, )
+    val program = new ShaderProgram(shaders)
     shaders.foreach(s => glAttachShader(program.id, s.id))
     attributes.zipWithIndex.foreach { case(a, i) => glBindAttribLocation(program.id, i, a) }
     program.link()
+    program.prepareUniforms(uniforms)
     program
   }
   def check[R](block: => R, pid: Int, state: Int, message: String): Unit = {
