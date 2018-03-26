@@ -12,8 +12,9 @@ import org.master.core
 
 class Graphics extends CoreUnit {
   private var _shaderPrograms = Array.empty[ShaderProgram]
-  private val _projMatrix = Matrix4fUniform.perspective(60, 0.1f, 100).withName("projectionMatrix")
-  private val _projMatrixTest = new Matrix4fUniform().withName("projectionMatrix")
+//  private val _projMatrix = Matrix4fUniform.perspective(60, 0.1f, 100).withName("projectionMatrix")
+  private val _projMatrix = new Matrix4fUniform().withName("projectionMatrix")
+  private val _camera = new Camera(); _camera.withName("viewMatrix")
   override def init(): Boolean = core.Utils.logging() {
     GL.createCapabilities
     GLUtil.setupDebugMessageCallback
@@ -53,6 +54,9 @@ class Graphics extends CoreUnit {
     val lineC = (Array(1f, 1, 0, 0, 0, 1, 0, 1, 1), 3)
     program.addVao(Vao.create(DrawType.LineLoop, 3, Array(lineP, lineC)))
     _projMatrix.withLocation(program.uniformLocations(this._projMatrix.name))
+    _camera.withLocation(program.uniformLocations(this._camera.name))
+    _camera.update()
+    program.uniformLocations.foreach(println)
 
     val vertexes = Array(
       new Vertex(VertexElement(-1, -1), VertexElement(0, 0, 1)),
@@ -67,6 +71,7 @@ class Graphics extends CoreUnit {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     _shaderPrograms.foreach { p =>
       _projMatrix.render()
+      _camera.render()
       p.render()
     }
   }

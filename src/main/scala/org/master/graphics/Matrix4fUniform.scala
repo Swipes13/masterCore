@@ -15,7 +15,7 @@ class Matrix4fUniform extends Matrix4f with Uniform {
   var location: Int = 0
   var name = ""
   private val buffer: FloatBuffer = BufferUtils.createFloatBuffer(16)
-  private def updateBuffer(): FloatBuffer = { this.set(buffer); buffer.flip(); buffer }
+  private def updateBuffer(): FloatBuffer = { this.get(buffer); buffer }
 
   def render(location: Int = this.location): Unit = glUniformMatrix4fv(location, false, updateBuffer())
   def withName(name: String): Matrix4fUniform = { this.name = name; this }
@@ -28,7 +28,7 @@ object Matrix4fUniform {
     proj.perspective(Math.toRadians(fov).toFloat, Window.size.width / Window.size.height.toFloat, near, far)
     proj
   }
-  def lookAt(eye: Vector3f, pos: Vector3f, location: Int = 0): Matrix4fUniform = {
+  def lookAt(eye: Vector3f, pos: Vector3f): Matrix4fUniform = {
     val view = new Matrix4fUniform()
     view.lookAt(eye, pos, new Vector3f(0, 1, 0))
     view
