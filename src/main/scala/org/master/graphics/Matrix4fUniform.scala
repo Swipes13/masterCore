@@ -19,7 +19,7 @@ class Matrix4fUniform extends Matrix4f with Uniform {
 
   def render(location: Int = this.location): Unit = glUniformMatrix4fv(location, false, updateBuffer())
   def withName(name: String): Matrix4fUniform = { this.name = name; this }
-  def withLocation(location: Int): Matrix4fUniform = { this.location = Some(location).getOrElse(0); this }
+  def withLocation(location: Int): Matrix4fUniform = { this.location = location; this }
 }
 
 object Matrix4fUniform {
@@ -33,5 +33,4 @@ object Matrix4fUniform {
     view.lookAt(eye, pos, new Vector3f(0, 1, 0))
     view
   }
-  def degreesToRadians(degrees: Float): Double = degrees * (Math.PI / 180f)
 }
