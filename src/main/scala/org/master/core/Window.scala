@@ -9,11 +9,13 @@ import org.lwjgl.system.MemoryUtil.NULL
   * Created by valentin on 25/02/2018.
   */
 
-object Window extends Window(fullscreen = false)
+object Window extends Window(fullscreen = true)
 
 case class Size(width: Int = 0, height: Int = 0)
 
 class Window(val fullscreen: Boolean) extends CoreUnit { // TODO: write correct fullscreen
+  private var changeFocusCbs = scala.collection.immutable.List.empty[(Boolean) => Unit]
+
   private var _ptr = 0L
   private var _size = Size()
   private var _delta = 0.0
@@ -45,8 +47,15 @@ class Window(val fullscreen: Boolean) extends CoreUnit { // TODO: write correct 
     glfwMakeContextCurrent(_ptr)
     glfwSwapInterval(1)
     glfwShowWindow(_ptr)
+
+    glfwSetWindowFocusCallback(Window.ptr, (window: Long, focused: Boolean) => changeFocusCbs.foreach(f => f(focused)))
+
+    // TODO: in fullscreen ?
+//    glfwSetInputMode(ptr, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
     true
   }
+
+  def addFocusCb(cb: (Boolean) => Unit): Unit = this.changeFocusCbs = this.changeFocusCbs :+ cb
 
   override def destroy(): Unit = Utils.logging() {
     glfwFreeCallbacks(_ptr)
@@ -65,8 +74,8 @@ class Window(val fullscreen: Boolean) extends CoreUnit { // TODO: write correct 
   }
 
   override def update(dt: Double): Unit = {
-    glfwSwapBuffers(_ptr)
     glfwPollEvents()
+    glfwSwapBuffers(_ptr)
   }
 
   private def getMonitorSize = {

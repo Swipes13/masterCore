@@ -1,23 +1,23 @@
 package org.master.graphics
 
 import org.joml.{Matrix4f, Vector3f}
-import org.master.core.{KeyType, Keys}
+import org.master.core.{KeyType, Keys, MousePos}
 
 class Camera extends Matrix4fUniform {
   val deltaCf = 0.01f
-  Keys.keyPressFuncs += (KeyType.W.id, () => walk(-deltaCf))
-  Keys.keyPressFuncs += (KeyType.A.id, () => strafe(-deltaCf))
-  Keys.keyPressFuncs += (KeyType.S.id, () => walk(deltaCf))
-  Keys.keyPressFuncs += (KeyType.D.id, () => strafe(deltaCf))
-  Keys.mousePosFuncs = Keys.mousePosFuncs :+ ((x: Double, y: Double) => {
-    println(x, y)
-    pitch(y/100); rotY(x/100)
-  })
+  Keys.addKeyPressCb(KeyType.W.id, () => walk(-deltaCf))
+  Keys.addKeyPressCb(KeyType.A.id, () => strafe(-deltaCf))
+  Keys.addKeyPressCb(KeyType.S.id, () => walk(deltaCf))
+  Keys.addKeyPressCb(KeyType.D.id, () => strafe(deltaCf))
+  Keys.addKeyPressCb(KeyType.LShift.id, () => speed = 5)
+  Keys.addKeyReleaseCb(KeyType.LShift.id, () => speed = 1)
+  Keys.addMousePosCb((pos: MousePos) => { pitch(-pos.y/100); rotY(pos.x/100) })
 
   var position = new Vector3f(0, 0, 1)
   var look = new Vector3f(0, 0, -1)
   var right = new Vector3f(1, 0, 0)
   var up = new Vector3f(0, 1, 0)
+  var speed = 1.0f
 
   var needToPrint = true
 
@@ -38,8 +38,8 @@ class Camera extends Matrix4fUniform {
     }
   }
 
-  def walk(delta: Float): Vector3f = position.add(look.mul(delta, new Vector3f()))
-  def strafe(delta: Float): Vector3f = position.add(right.mul(delta, new Vector3f()))
+  def walk(delta: Float): Vector3f = position.add(look.mul(delta * speed, new Vector3f()))
+  def strafe(delta: Float): Vector3f = position.add(right.mul(delta * speed, new Vector3f()))
   def pitch(delta: Double): Unit = {
     val r = new Matrix4f().rotation(delta.toFloat, right)
     r.transformDirection(up)

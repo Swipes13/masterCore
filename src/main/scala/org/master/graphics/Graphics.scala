@@ -17,7 +17,7 @@ class Graphics extends CoreUnit {
     GL.createCapabilities
     GLUtil.setupDebugMessageCallback
     glClearColor(0.05f, 0.45f, 0.45f, 0.0f)
-    glViewport(0, 0, Window.size.width, Window.size.height)
+    glViewport(0, 0, Window.size.width * 2, Window.size.height * 2)
 //    glShadeModel(GL_SMOOTH)
 //    glClearDepth(1.0f)
     glDisable(GL_DEPTH_TEST)
