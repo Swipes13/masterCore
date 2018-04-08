@@ -23,11 +23,12 @@ class Shader(`type`: ShaderType.Value) {
 
 object Shader {
   @throws[Exception]
-  def create(filename: String, shaderType: ShaderType.ShaderType): Shader = {
+  def create(filename: String, shaderType: ShaderType.ShaderType, defines: Array[String] = Array.empty[String]): Shader = {
     val shader = new Shader(shaderType)
     if (shader.id == 0) throw stackTraceError(filename, shader.id)
 
-    glShaderSource(shader.id, Source.fromFile(filename).mkString)
+    val sourceFromFile = Source.fromFile(filename).mkString
+    glShaderSource(shader.id, sourceFromFile)
     glCompileShader(shader.id)
 
     if (glGetShaderi(shader.id, GL_COMPILE_STATUS) == GL_FALSE) throw stackTraceError(filename, shader.id)

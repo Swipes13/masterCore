@@ -5,7 +5,7 @@ import org.lwjgl.opengl.GL11._
 
 class ShaderProgram(val shaders: Array[Shader]) {
   val id: Int = glCreateProgram
-  var uniformLocations: Map[String, Int] = _
+  var uniformLocs: Map[String, Int] = _
   private var _vaos = Array.empty[Vao]
 
   def render(): Unit = use()._vaos.foreach(Vao.render)
@@ -13,7 +13,8 @@ class ShaderProgram(val shaders: Array[Shader]) {
   def validate(): Unit = ShaderProgram.check(glValidateProgram(id), id, GL_VALIDATE_STATUS, "validate shader error. ")
   def link(): Unit = ShaderProgram.check(glLinkProgram(id), id, GL_LINK_STATUS, "link shader error. ")
   def addVao(vao: Vao): Unit = _vaos = _vaos :+ vao
-  def prepareUniforms(uniforms: Array[String]): Unit = uniformLocations = uniforms.map(u => (u, glGetUniformLocation(id, u))).toMap[String, Int]
+  def prepareUniforms(uniforms: Array[String]): Unit = uniformLocs = uniforms.map(u => (u, glGetUniformLocation(id, u))).toMap[String, Int]
+  def updateLocForU(u: Uniform): Uniform = u.withLoc(this.uniformLocs.getOrElse(u.name, 0))
 }
 
 object ShaderProgram {

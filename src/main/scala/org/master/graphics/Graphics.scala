@@ -11,8 +11,9 @@ import org.master.core
 
 class Graphics extends CoreUnit {
   private var _shaderPrograms = Array.empty[ShaderProgram]
-  private var _projMatrix = new Matrix4fUniform().withName("projectionMatrix")
+  private var _projMatrix = new Matrix4fU().withName("projectionMatrix")
   private val _camera = new Camera(); _camera.withName("viewMatrix")
+  private val _testRed = new Float1U(0.5f); _testRed.withName("red")
   override def init(): Boolean = core.Utils.logging() {
     GL.createCapabilities
     GLUtil.setupDebugMessageCallback
@@ -32,7 +33,7 @@ class Graphics extends CoreUnit {
     val colorSp = ShaderProgram.create(Array(
        Shader.create("shaders/simplev.glsl", ShaderType.Vertex),
        Shader.create("shaders/simplef.glsl", ShaderType.Fragment)
-    ), attributes = Array("vpos, vcolor"), uniforms = Array("projectionMatrix", "viewMatrix", "modelMatrix"))
+    ), attributes = Array("vpos, vcolor"), uniforms = Array("projectionMatrix", "viewMatrix", "modelMatrix", "red"))
     addVaosToProgram(colorSp)
     b += colorSp
     _shaderPrograms = b.toArray
@@ -42,10 +43,13 @@ class Graphics extends CoreUnit {
     val lineP = (Array(-1f, -1, 0,  1, -1, 1), 2)
     val lineC = (Array(1f, 1, 0, 0, 0, 1, 0, 1, 1), 3)
     program.addVao(Vao.create(DrawType.LineLoop, 3, Array(lineP, lineC)))
-    _projMatrix = Matrix4fUniform.perspective(60, 0.01f, 100).withName("projectionMatrix")
-    _projMatrix.withLocation(program.uniformLocations(this._projMatrix.name))
-    _camera.withLocation(program.uniformLocations(this._camera.name))
-    program.uniformLocations.foreach(println)
+    _projMatrix = Matrix4fU.perspective(60, 0.01f, 100).withName("projectionMatrix")
+
+    program.updateLocForU(this._projMatrix)
+    program.updateLocForU(this._camera)
+    program.updateLocForU(this._testRed)
+
+    program.uniformLocs.foreach(println)
 
     val vertexes = Array(
       new Vertex(VertexElement(-1, -1), VertexElement(0, 0, 1)),
@@ -59,7 +63,10 @@ class Graphics extends CoreUnit {
   override def update(dt: Double): Unit = {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     _shaderPrograms.foreach { p =>
-      _projMatrix.render()
+      _testRed.v1 += 0.01f
+      if (_testRed.v1 >= 1.0f) _testRed.v1 = 0
+      _projMatrix.set()
+      _testRed.set()
       _camera.updateWithRender()
       p.render()
     }

@@ -9,7 +9,7 @@ import org.lwjgl.system.MemoryUtil.NULL
   * Created by valentin on 25/02/2018.
   */
 
-object Window extends Window(fullscreen = true)
+object Window extends Window(fullscreen = false)
 
 case class Size(width: Int = 0, height: Int = 0)
 

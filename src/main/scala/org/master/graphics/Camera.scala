@@ -3,7 +3,7 @@ package org.master.graphics
 import org.joml.{Matrix4f, Vector3f}
 import org.master.core.{KeyType, Keys, MousePos}
 
-class Camera extends Matrix4fUniform {
+class Camera extends Matrix4fU {
   val deltaCf = 0.01f
   Keys.addKeyPressCb(KeyType.W.id, () => walk(-deltaCf))
   Keys.addKeyPressCb(KeyType.A.id, () => strafe(-deltaCf))
@@ -21,7 +21,7 @@ class Camera extends Matrix4fUniform {
 
   var needToPrint = true
 
-  def updateWithRender(location: Int = this.location): Unit = { update(); render(location) }
+  def updateWithRender(location: Int = this.location): Unit = { update(); set(location) }
   def update(): Unit = { // TODO: optimize with dirty flag
     look.normalize()
     look.cross(right, up).normalize()
