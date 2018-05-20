@@ -42,5 +42,8 @@ class Int4U(var v1: Int = 0, var v2: Int = 0, var v3: Int = 0, var v4: Int = 0) 
 
 class Float1U(var v1: Float = 0) extends Uniform { override def set(location: Int = this.location): Unit = glUniform1f(location, v1) }
 class Float2U(var v1: Float = 0, var v2: Float = 0) extends Uniform { override def set(location: Int = this.location): Unit = glUniform2f(location, v1, v2) }
-class Float3U(var v1: Float = 0, var v2: Float = 0, var v3: Float = 0) extends Uniform { override def set(location: Int = this.location): Unit = glUniform3f(location, v1, v2, v3) }
+class Float3U(var v1: Float = 0, var v2: Float = 0, var v3: Float = 0) extends Uniform {
+  override def set(location: Int = this.location): Unit = glUniform3f(location, v1, v2, v3)
+  def update(v: Vector3f): Float3U = { v1 = v.x; v2 = v.y; v3 = v.z; this }
+}
 class Float4U(var v1: Float = 0, var v2: Float = 0, var v3: Float = 0, var v4: Float = 0) extends Uniform { override def set(location: Int = this.location): Unit = glUniform4f(location, v1, v2, v3, v4) }

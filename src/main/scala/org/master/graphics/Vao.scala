@@ -28,11 +28,11 @@ class Vao(val drawType: DrawType.Value, val vertexCount: Int, val length: Int) {
 }
 
 class IVao(drawType: DrawType.Value, vertexCount: Int, length: Int) extends Vao(drawType, vertexCount, length) {
-  override def draw(): Vao = { glDrawElements(drawType.id, vertexCount, GL_UNSIGNED_BYTE, 0); this }
+  override def draw(): Vao = { glDrawElements(drawType.id, vertexCount, GL_UNSIGNED_INT, 0); this }
 }
 
 object Vao {
-  def create(drawType: DrawType.Value, vertexCount: Int, fbs: Array[(Array[Float], Int)], indexes: Array[Byte] = null): Vao = {
+  def create(drawType: DrawType.Value, vertexCount: Int, fbs: Array[(Array[Float], Int)], indexes: Array[Int] = null): Vao = {
     val vao = (if (indexes == null) new Vao(drawType, vertexCount, fbs.length) else new IVao(drawType, vertexCount, fbs.length)).bind()
     vao.vbos = fbs.zipWithIndex.map { case ((floats, count), index) =>
       val vbo = Vbo.create(BufferType.Vertex, floats)
@@ -42,8 +42,8 @@ object Vao {
     } ++ createIVbo(indexes).toList
     vao
   }
-//  def create(drawType: DrawType.Value, vertexes: Array[Vertex]): Vao = Vao.create(drawType, vertexes, null)
-  def createInterleaved(drawType: DrawType.Value, vertexes: Array[Vertex], indexes: Array[Byte] = null): Vao = {
+
+  def createInterleaved(drawType: DrawType.Value, vertexes: Array[Vertex], indexes: Array[Int] = null): Vao = {
     val vao = (if (indexes == null) new Vao(drawType, vertexes.length, Vertex.elemCount(vertexes)) else new IVao(drawType, indexes.length, Vertex.elemCount(vertexes))).bind()
     val floats = vertexes.flatMap(vs => vs.elems.flatMap(v => v.values))
     val vbo = Vbo.create(BufferType.Vertex, floats)
@@ -53,7 +53,8 @@ object Vao {
     vao.vbos = Array(vbo) ++ createIVbo(indexes).toList
     vao
   }
-  private def createIVbo(indexes: Array[Byte]) = Option(indexes).map(i => Vbo.create(Vbo.prepareBuffer(i)))
+
+  private def createIVbo(indexes: Array[Int]) = Option(indexes).map(i => Vbo.create(Vbo.prepareBuffer(i)))
   def render(vao: Vao): Unit = vao.render()
   def clear(vao: Vao): Unit = {
     vao.vbos.foreach(Vbo.clear)

@@ -16,7 +16,7 @@ object ShaderType extends Enumeration {
   val Fragment: graphics.ShaderType.Value = Value(GL_FRAGMENT_SHADER)
 }
 
-class Shader(`type`: ShaderType.Value) {
+class Shader(val `type`: ShaderType.Value) {
   val id: Int = glCreateShader(`type`.id)
   def detach(programId: Int): Unit = glDetachShader(programId, id)
 }
@@ -24,10 +24,11 @@ class Shader(`type`: ShaderType.Value) {
 object Shader {
   @throws[Exception]
   def create(filename: String, shaderType: ShaderType.ShaderType, defines: Array[String] = Array.empty[String]): Shader = {
-    val shader = new Shader(shaderType)
+    val sourceFromFile = Source.fromFile(filename).mkString
+
+    val shader = Shader(shaderType, sourceFromFile)
     if (shader.id == 0) throw stackTraceError(filename, shader.id)
 
-    val sourceFromFile = Source.fromFile(filename).mkString
     glShaderSource(shader.id, sourceFromFile)
     glCompileShader(shader.id)
 
@@ -36,4 +37,17 @@ object Shader {
   }
   def stackTraceError(filename: String, ptr: Int) = new RuntimeException("compilation error for shader [" + filename + "]. Reason: " + glGetShaderInfoLog(ptr, 1000))
   def clear(shader: Shader): Unit = glDeleteShader(shader.id)
+
+  def apply(`type`: ShaderType.Value, source: String): Shader = {
+    if (`type`.id == ShaderType.Vertex.id) new VertexShader(source)
+    else new Shader(`type`)
+  }
+}
+
+class VertexShader(source: String) extends Shader(ShaderType.Vertex) {
+  private val sourceLines = source.split('\n')
+  var uniforms: Array[String] = getVar("uniform")
+  var attribs: Array[String] = getVar("layout")
+
+  private def getVar(find: String) = sourceLines.filter(l => l.contains(find)).map(_.split(' ')).map(line => line.last.substring(0, line.last.length - 1))
 }

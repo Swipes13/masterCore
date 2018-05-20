@@ -24,5 +24,7 @@
     <orderEntry type="library" name="SBT: org.scala-lang:scala-library:2.12.4:jar" level="project" />
     <orderEntry type="library" name="lwjgl-assimp-javadoc" level="project" />
     <orderEntry type="library" name="joml-1.9.8" level="project" />
+    <orderEntry type="library" name="PNGDecoder" level="project" />
+    <orderEntry type="library" name="slick-util" level="project" />
   </component>
 </module>

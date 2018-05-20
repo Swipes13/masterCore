@@ -1,8 +1,14 @@
 #version 400 core
 
-in vec3 color;
-out vec4 fColor;
+uniform sampler2D texture_diffuse;
+
+in vec3 norm;
+in vec2 tutv;
+in vec3 light;
+
+out vec4 out_color;
 
 void main() {
-    fColor = vec4(color, 1.0);
+    out_color = vec4(0, 0, 0, 1);// texture(texture_diffuse, tutv);
+    out_color.rgb *= dot(norm, light);
 }

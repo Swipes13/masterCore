@@ -1,0 +1,679 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns:i="http://www.w3.org/2001/XMLSchema-instance" z:Id="1" xmlns:z="http://schemas.microsoft.com/2003/10/Serialization/" xmlns="http://schemas.datacontract.org/2004/07/Quasar.UI.Project">
+  <Filename z:Id="2">Panda</Filename>
+  <Items xmlns:d2p1="http://schemas.microsoft.com/2003/10/Serialization/Arrays" z:Id="3" z:Size="10">
+    <d2p1:anyType z:Id="4" i:type="GmshMeshBuilder">
+      <Description i:nil="true" />
+      <Project z:Ref="1" i:nil="true" />
+      <Title z:Id="5">panda1</Title>
+      <Views z:Id="6" z:Size="0" />
+      <View i:nil="true" />
+      <DataName z:Id="7">66dc5075-18eb-4d34-92da-b09dbb33b734.mesh</DataName>
+    </d2p1:anyType>
+    <d2p1:anyType z:Id="8" i:type="GmshMeshBuilder">
+      <Description i:nil="true" />
+      <Project z:Ref="1" i:nil="true" />
+      <Title z:Id="9">panda2</Title>
+      <Views z:Id="10" z:Size="0" />
+      <View i:nil="true" />
+      <DataName z:Id="11">4bce2057-8d13-4754-a9fb-6cd792b72db7.mesh</DataName>
+    </d2p1:anyType>
+    <d2p1:anyType z:Id="12" i:type="GmshMeshBuilder">
+      <Description i:nil="true" />
+      <Project z:Ref="1" i:nil="true" />
+      <Title z:Id="13">panda3</Title>
+      <Views z:Id="14" z:Size="0" />
+      <View i:nil="true" />
+      <DataName z:Id="15">5bf81f0a-2dde-4bc9-baf1-ca2796dd6e3f.mesh</DataName>
+    </d2p1:anyType>
+    <d2p1:anyType z:Id="16" i:type="MaterialCatalog">
+      <Description i:nil="true" />
+      <Project z:Ref="1" i:nil="true" />
+      <Title z:Id="17">Materials</Title>
+      <Views z:Id="18" z:Size="0" />
+      <Materials z:Id="19" z:Size="3">
+        <d2p1:anyType z:Id="20" xmlns:d5p1="http://schemas.datacontract.org/2004/07/Quasar.Core.Materials" i:type="d5p1:VolumeMaterial">
+          <d5p1:Coefs z:Id="21" z:Size="3">
+            <d2p1:KeyValueOfstringanyType>
+              <d2p1:Key z:Id="22">Mu</d2p1:Key>
+              <d2p1:Value z:Id="23" xmlns:d8p1="http://schemas.datacontract.org/2004/07/Quasar.UI.Expressions" i:type="d8p1:ConstExprCalculatorOfdouble">
+                <d8p1:Name z:Ref="22" i:nil="true" />
+                <d8p1:Spec>Constant</d8p1:Spec>
+                <d8p1:Text z:Id="24">1</d8p1:Text>
+                <d8p1:value>1</d8p1:value>
+              </d2p1:Value>
+            </d2p1:KeyValueOfstringanyType>
+            <d2p1:KeyValueOfstringanyType>
+              <d2p1:Key z:Id="25">Gamma</d2p1:Key>
+              <d2p1:Value z:Id="26" xmlns:d8p1="http://schemas.datacontract.org/2004/07/Quasar.UI.Expressions" i:type="d8p1:ConstExprCalculatorOfdouble">
+                <d8p1:Name z:Ref="25" i:nil="true" />
+                <d8p1:Spec>Zero</d8p1:Spec>
+                <d8p1:Text z:Id="27">0</d8p1:Text>
+                <d8p1:value>0</d8p1:value>
+              </d2p1:Value>
+            </d2p1:KeyValueOfstringanyType>
+            <d2p1:KeyValueOfstringanyType>
+              <d2p1:Key z:Id="28">F</d2p1:Key>
+              <d2p1:Value z:Id="29" xmlns:d8p1="http://schemas.datacontract.org/2004/07/Quasar.UI.Expressions" i:type="d8p1:ConstExprCalculatorOfdouble">
+                <d8p1:Name z:Ref="28" i:nil="true" />
+                <d8p1:Spec>Zero</d8p1:Spec>
+                <d8p1:Text z:Id="30">0</d8p1:Text>
+                <d8p1:value>0</d8p1:value>
+              </d2p1:Value>
+            </d2p1:KeyValueOfstringanyType>
+          </d5p1:Coefs>
+          <d5p1:Name z:Id="31">air</d5p1:Name>
+          <d5p1:Number>0</d5p1:Number>
+          <d5p1:Type>Scalar Reducted</d5p1:Type>
+        </d2p1:anyType>
+        <d2p1:anyType z:Id="32" xmlns:d5p1="http://schemas.datacontract.org/2004/07/Quasar.Core.Materials" i:type="d5p1:BoundaryMaterial">
+          <d5p1:Coefs z:Id="33" z:Size="1">
+            <d2p1:KeyValueOfstringanyType>
+              <d2p1:Key z:Id="34">Data</d2p1:Key>
+              <d2p1:Value z:Id="35" xmlns:d8p1="http://schemas.datacontract.org/2004/07/Quasar.UI.Expressions" i:type="d8p1:ConstExprCalculatorOfdouble">
+                <d8p1:Name z:Ref="34" i:nil="true" />
+                <d8p1:Spec>Zero</d8p1:Spec>
+                <d8p1:Text z:Id="36">0</d8p1:Text>
+                <d8p1:value>0</d8p1:value>
+              </d2p1:Value>
+            </d2p1:KeyValueOfstringanyType>
+          </d5p1:Coefs>
+          <d5p1:Name z:Id="37">inf</d5p1:Name>
+          <d5p1:Number>0</d5p1:Number>
+          <d5p1:Type>Dirichlet</d5p1:Type>
+        </d2p1:anyType>
+        <d2p1:anyType z:Id="38" xmlns:d5p1="http://schemas.datacontract.org/2004/07/Quasar.Core.Materials" i:type="d5p1:VolumeMaterial">
+          <d5p1:Coefs z:Id="39" z:Size="4">
+            <d2p1:KeyValueOfstringanyType>
+              <d2p1:Key z:Id="40">Mu</d2p1:Key>
+              <d2p1:Value z:Id="41" xmlns:d8p1="http://schemas.datacontract.org/2004/07/Quasar.UI.Expressions" i:type="d8p1:ConstExprCalculatorOfdouble">
+                <d8p1:Name z:Ref="40" i:nil="true" />
+                <d8p1:Spec>Constant</d8p1:Spec>
+                <d8p1:Text z:Id="42">100</d8p1:Text>
+                <d8p1:value>100</d8p1:value>
+              </d2p1:Value>
+            </d2p1:KeyValueOfstringanyType>
+            <d2p1:KeyValueOfstringanyType>
+              <d2p1:Key z:Id="43">Sigma</d2p1:Key>
+              <d2p1:Value z:Id="44" xmlns:d8p1="http://schemas.datacontract.org/2004/07/Quasar.UI.Expressions" i:type="d8p1:ConstExprCalculatorOfdouble">
+                <d8p1:Name z:Ref="43" i:nil="true" />
+                <d8p1:Spec>Constant</d8p1:Spec>
+                <d8p1:Text z:Id="45">1e7</d8p1:Text>
+                <d8p1:value>10000000</d8p1:value>
+              </d2p1:Value>
+            </d2p1:KeyValueOfstringanyType>
+            <d2p1:KeyValueOfstringanyType>
+              <d2p1:Key z:Id="46">Gamma</d2p1:Key>
+              <d2p1:Value z:Id="47" xmlns:d8p1="http://schemas.datacontract.org/2004/07/Quasar.UI.Expressions" i:type="d8p1:ConstExprCalculatorOfdouble">
+                <d8p1:Name z:Ref="46" i:nil="true" />
+                <d8p1:Spec>Zero</d8p1:Spec>
+                <d8p1:Text z:Id="48">0</d8p1:Text>
+                <d8p1:value>0</d8p1:value>
+              </d2p1:Value>
+            </d2p1:KeyValueOfstringanyType>
+            <d2p1:KeyValueOfstringanyType>
+              <d2p1:Key z:Id="49">F</d2p1:Key>
+              <d2p1:Value z:Id="50" xmlns:d8p1="http://schemas.datacontract.org/2004/07/Quasar.UI.Expressions" i:type="d8p1:ConstExprCalculatorOfdouble">
+                <d8p1:Name z:Ref="49" i:nil="true" />
+                <d8p1:Spec>Zero</d8p1:Spec>
+                <d8p1:Text z:Id="51">0</d8p1:Text>
+                <d8p1:value>0</d8p1:value>
+              </d2p1:Value>
+            </d2p1:KeyValueOfstringanyType>
+          </d5p1:Coefs>
+          <d5p1:Name z:Id="52">steel</d5p1:Name>
+          <d5p1:Number>0</d5p1:Number>
+          <d5p1:Type>Vector</d5p1:Type>
+        </d2p1:anyType>
+      </Materials>
+    </d2p1:anyType>
+    <d2p1:anyType z:Id="53" i:type="SimplePandaCoilBuilder">
+      <Description i:nil="true" />
+      <Project z:Ref="1" i:nil="true" />
+      <Title z:Id="54">Simple Panda Coil</Title>
+      <Views z:Id="55" z:Size="0" />
+      <View i:nil="true" />
+    </d2p1:anyType>
+    <d2p1:anyType z:Id="56" i:type="MaterialCatalog">
+      <Description i:nil="true" />
+      <Project z:Ref="1" i:nil="true" />
+      <Title z:Id="57">Materials (BEM)</Title>
+      <Views z:Id="58" z:Size="0" />
+      <Materials z:Id="59" z:Size="3">
+        <d2p1:anyType z:Id="60" xmlns:d5p1="http://schemas.datacontract.org/2004/07/Quasar.Core.Materials" i:type="d5p1:VolumeMaterial">
+          <d5p1:Coefs z:Id="61" z:Size="3">
+            <d2p1:KeyValueOfstringanyType>
+              <d2p1:Key z:Ref="22" i:nil="true" />
+              <d2p1:Value z:Id="62" xmlns:d8p1="http://schemas.datacontract.org/2004/07/Quasar.UI.Expressions" i:type="d8p1:ConstExprCalculatorOfdouble">
+                <d8p1:Name z:Ref="22" i:nil="true" />
+                <d8p1:Spec>Constant</d8p1:Spec>
+                <d8p1:Text z:Ref="24" i:nil="true" />
+                <d8p1:value>1</d8p1:value>
+              </d2p1:Value>
+            </d2p1:KeyValueOfstringanyType>
+            <d2p1:KeyValueOfstringanyType>
+              <d2p1:Key z:Ref="25" i:nil="true" />
+              <d2p1:Value z:Id="63" xmlns:d8p1="http://schemas.datacontract.org/2004/07/Quasar.UI.Expressions" i:type="d8p1:ConstExprCalculatorOfdouble">
+                <d8p1:Name z:Ref="25" i:nil="true" />
+                <d8p1:Spec>Zero</d8p1:Spec>
+                <d8p1:Text z:Ref="27" i:nil="true" />
+                <d8p1:value>0</d8p1:value>
+              </d2p1:Value>
+            </d2p1:KeyValueOfstringanyType>
+            <d2p1:KeyValueOfstringanyType>
+              <d2p1:Key z:Ref="28" i:nil="true" />
+              <d2p1:Value z:Id="64" xmlns:d8p1="http://schemas.datacontract.org/2004/07/Quasar.UI.Expressions" i:type="d8p1:ConstExprCalculatorOfdouble">
+                <d8p1:Name z:Ref="28" i:nil="true" />
+                <d8p1:Spec>Zero</d8p1:Spec>
+                <d8p1:Text z:Ref="30" i:nil="true" />
+                <d8p1:value>0</d8p1:value>
+              </d2p1:Value>
+            </d2p1:KeyValueOfstringanyType>
+          </d5p1:Coefs>
+          <d5p1:Name z:Ref="31" i:nil="true" />
+          <d5p1:Number>0</d5p1:Number>
+          <d5p1:Type>Scalar Reducted BEM External</d5p1:Type>
+        </d2p1:anyType>
+        <d2p1:anyType z:Id="65" xmlns:d5p1="http://schemas.datacontract.org/2004/07/Quasar.Core.Materials" i:type="d5p1:BoundaryMaterial">
+          <d5p1:Coefs z:Id="66" z:Size="1">
+            <d2p1:KeyValueOfstringanyType>
+              <d2p1:Key z:Ref="34" i:nil="true" />
+              <d2p1:Value z:Id="67" xmlns:d8p1="http://schemas.datacontract.org/2004/07/Quasar.UI.Expressions" i:type="d8p1:ConstExprCalculatorOfdouble">
+                <d8p1:Name z:Ref="34" i:nil="true" />
+                <d8p1:Spec>Zero</d8p1:Spec>
+                <d8p1:Text z:Ref="36" i:nil="true" />
+                <d8p1:value>0</d8p1:value>
+              </d2p1:Value>
+            </d2p1:KeyValueOfstringanyType>
+          </d5p1:Coefs>
+          <d5p1:Name z:Ref="37" i:nil="true" />
+          <d5p1:Number>0</d5p1:Number>
+          <d5p1:Type>Dirichlet</d5p1:Type>
+        </d2p1:anyType>
+        <d2p1:anyType z:Id="68" xmlns:d5p1="http://schemas.datacontract.org/2004/07/Quasar.Core.Materials" i:type="d5p1:VolumeMaterial">
+          <d5p1:Coefs z:Id="69" z:Size="4">
+            <d2p1:KeyValueOfstringanyType>
+              <d2p1:Key z:Ref="40" i:nil="true" />
+              <d2p1:Value z:Id="70" xmlns:d8p1="http://schemas.datacontract.org/2004/07/Quasar.UI.Expressions" i:type="d8p1:ConstExprCalculatorOfdouble">
+                <d8p1:Name z:Ref="40" i:nil="true" />
+                <d8p1:Spec>Constant</d8p1:Spec>
+                <d8p1:Text z:Ref="42" i:nil="true" />
+                <d8p1:value>100</d8p1:value>
+              </d2p1:Value>
+            </d2p1:KeyValueOfstringanyType>
+            <d2p1:KeyValueOfstringanyType>
+              <d2p1:Key z:Ref="43" i:nil="true" />
+              <d2p1:Value z:Id="71" xmlns:d8p1="http://schemas.datacontract.org/2004/07/Quasar.UI.Expressions" i:type="d8p1:ConstExprCalculatorOfdouble">
+                <d8p1:Name z:Ref="43" i:nil="true" />
+                <d8p1:Spec>Constant</d8p1:Spec>
+                <d8p1:Text z:Ref="45" i:nil="true" />
+                <d8p1:value>10000000</d8p1:value>
+              </d2p1:Value>
+            </d2p1:KeyValueOfstringanyType>
+            <d2p1:KeyValueOfstringanyType>
+              <d2p1:Key z:Ref="46" i:nil="true" />
+              <d2p1:Value z:Id="72" xmlns:d8p1="http://schemas.datacontract.org/2004/07/Quasar.UI.Expressions" i:type="d8p1:ConstExprCalculatorOfdouble">
+                <d8p1:Name z:Ref="46" i:nil="true" />
+                <d8p1:Spec>Zero</d8p1:Spec>
+                <d8p1:Text z:Ref="48" i:nil="true" />
+                <d8p1:value>0</d8p1:value>
+              </d2p1:Value>
+            </d2p1:KeyValueOfstringanyType>
+            <d2p1:KeyValueOfstringanyType>
+              <d2p1:Key z:Ref="49" i:nil="true" />
+              <d2p1:Value z:Id="73" xmlns:d8p1="http://schemas.datacontract.org/2004/07/Quasar.UI.Expressions" i:type="d8p1:ConstExprCalculatorOfdouble">
+                <d8p1:Name z:Ref="49" i:nil="true" />
+                <d8p1:Spec>Zero</d8p1:Spec>
+                <d8p1:Text z:Ref="51" i:nil="true" />
+                <d8p1:value>0</d8p1:value>
+              </d2p1:Value>
+            </d2p1:KeyValueOfstringanyType>
+          </d5p1:Coefs>
+          <d5p1:Name z:Ref="52" i:nil="true" />
+          <d5p1:Number>0</d5p1:Number>
+          <d5p1:Type>Vector</d5p1:Type>
+        </d2p1:anyType>
+      </Materials>
+    </d2p1:anyType>
+    <d2p1:anyType z:Id="74" i:type="SettingsView">
+      <Description i:nil="true" />
+      <Project z:Ref="1" i:nil="true" />
+      <Title z:Id="75">Default Settings</Title>
+      <Views z:Id="76" z:Size="0" />
+      <_settings xmlns:d4p1="http://schemas.datacontract.org/2004/07/Quasar" z:Id="77">
+        <d4p1:BemCalculatorType>Fast</d4p1:BemCalculatorType>
+        <d4p1:CleanQuadratures>false</d4p1:CleanQuadratures>
+        <d4p1:FemCalculatorType>MatchedResultants</d4p1:FemCalculatorType>
+        <d4p1:SolverSettings z:Id="78">
+          <d4p1:MatrixFormat>Pardiso</d4p1:MatrixFormat>
+          <d4p1:MaxIter>15000</d4p1:MaxIter>
+          <d4p1:Mute>false</d4p1:Mute>
+          <d4p1:SlaeEps>1E-07</d4p1:SlaeEps>
+        </d4p1:SolverSettings>
+        <d4p1:TimeSettings z:Id="79">
+          <d4p1:LayerCount>2</d4p1:LayerCount>
+          <d4p1:MeshParams z:Id="80" z:Size="3">
+            <d2p1:string z:Id="81">300</d2p1:string>
+            <d2p1:string z:Id="82">0</d2p1:string>
+            <d2p1:string z:Id="83">300</d2p1:string>
+          </d4p1:MeshParams>
+          <d4p1:SaveMatrix>true</d4p1:SaveMatrix>
+          <d4p1:TimeMesh z:Id="84" z:Size="301">
+            <d2p1:double>0</d2p1:double>
+            <d2p1:double>1</d2p1:double>
+            <d2p1:double>2</d2p1:double>
+            <d2p1:double>3</d2p1:double>
+            <d2p1:double>4</d2p1:double>
+            <d2p1:double>5</d2p1:double>
+            <d2p1:double>6</d2p1:double>
+            <d2p1:double>7</d2p1:double>
+            <d2p1:double>8</d2p1:double>
+            <d2p1:double>9</d2p1:double>
+            <d2p1:double>10</d2p1:double>
+            <d2p1:double>11</d2p1:double>
+            <d2p1:double>12</d2p1:double>
+            <d2p1:double>13</d2p1:double>
+            <d2p1:double>14</d2p1:double>
+            <d2p1:double>15</d2p1:double>
+            <d2p1:double>16</d2p1:double>
+            <d2p1:double>17</d2p1:double>
+            <d2p1:double>18</d2p1:double>
+            <d2p1:double>19</d2p1:double>
+            <d2p1:double>20</d2p1:double>
+            <d2p1:double>21</d2p1:double>
+            <d2p1:double>22</d2p1:double>
+            <d2p1:double>23</d2p1:double>
+            <d2p1:double>24</d2p1:double>
+            <d2p1:double>25</d2p1:double>
+            <d2p1:double>26</d2p1:double>
+            <d2p1:double>27</d2p1:double>
+            <d2p1:double>28</d2p1:double>
+            <d2p1:double>29</d2p1:double>
+            <d2p1:double>30</d2p1:double>
+            <d2p1:double>31</d2p1:double>
+            <d2p1:double>32</d2p1:double>
+            <d2p1:double>33</d2p1:double>
+            <d2p1:double>34</d2p1:double>
+            <d2p1:double>35</d2p1:double>
+            <d2p1:double>36</d2p1:double>
+            <d2p1:double>37</d2p1:double>
+            <d2p1:double>38</d2p1:double>
+            <d2p1:double>39</d2p1:double>
+            <d2p1:double>40</d2p1:double>
+            <d2p1:double>41</d2p1:double>
+            <d2p1:double>42</d2p1:double>
+            <d2p1:double>43</d2p1:double>
+            <d2p1:double>44</d2p1:double>
+            <d2p1:double>45</d2p1:double>
+            <d2p1:double>46</d2p1:double>
+            <d2p1:double>47</d2p1:double>
+            <d2p1:double>48</d2p1:double>
+            <d2p1:double>49</d2p1:double>
+            <d2p1:double>50</d2p1:double>
+            <d2p1:double>51</d2p1:double>
+            <d2p1:double>52</d2p1:double>
+            <d2p1:double>53</d2p1:double>
+            <d2p1:double>54</d2p1:double>
+            <d2p1:double>55</d2p1:double>
+            <d2p1:double>56</d2p1:double>
+            <d2p1:double>57</d2p1:double>
+            <d2p1:double>58</d2p1:double>
+            <d2p1:double>59</d2p1:double>
+            <d2p1:double>60</d2p1:double>
+            <d2p1:double>61</d2p1:double>
+            <d2p1:double>62</d2p1:double>
+            <d2p1:double>63</d2p1:double>
+            <d2p1:double>64</d2p1:double>
+            <d2p1:double>65</d2p1:double>
+            <d2p1:double>66</d2p1:double>
+            <d2p1:double>67</d2p1:double>
+            <d2p1:double>68</d2p1:double>
+            <d2p1:double>69</d2p1:double>
+            <d2p1:double>70</d2p1:double>
+            <d2p1:double>71</d2p1:double>
+            <d2p1:double>72</d2p1:double>
+            <d2p1:double>73</d2p1:double>
+            <d2p1:double>74</d2p1:double>
+            <d2p1:double>75</d2p1:double>
+            <d2p1:double>76</d2p1:double>
+            <d2p1:double>77</d2p1:double>
+            <d2p1:double>78</d2p1:double>
+            <d2p1:double>79</d2p1:double>
+            <d2p1:double>80</d2p1:double>
+            <d2p1:double>81</d2p1:double>
+            <d2p1:double>82</d2p1:double>
+            <d2p1:double>83</d2p1:double>
+            <d2p1:double>84</d2p1:double>
+            <d2p1:double>85</d2p1:double>
+            <d2p1:double>86</d2p1:double>
+            <d2p1:double>87</d2p1:double>
+            <d2p1:double>88</d2p1:double>
+            <d2p1:double>89</d2p1:double>
+            <d2p1:double>90</d2p1:double>
+            <d2p1:double>91</d2p1:double>
+            <d2p1:double>92</d2p1:double>
+            <d2p1:double>93</d2p1:double>
+            <d2p1:double>94</d2p1:double>
+            <d2p1:double>95</d2p1:double>
+            <d2p1:double>96</d2p1:double>
+            <d2p1:double>97</d2p1:double>
+            <d2p1:double>98</d2p1:double>
+            <d2p1:double>99</d2p1:double>
+            <d2p1:double>100</d2p1:double>
+            <d2p1:double>101</d2p1:double>
+            <d2p1:double>102</d2p1:double>
+            <d2p1:double>103</d2p1:double>
+            <d2p1:double>104</d2p1:double>
+            <d2p1:double>105</d2p1:double>
+            <d2p1:double>106</d2p1:double>
+            <d2p1:double>107</d2p1:double>
+            <d2p1:double>108</d2p1:double>
+            <d2p1:double>109</d2p1:double>
+            <d2p1:double>110</d2p1:double>
+            <d2p1:double>111</d2p1:double>
+            <d2p1:double>112</d2p1:double>
+            <d2p1:double>113</d2p1:double>
+            <d2p1:double>114</d2p1:double>
+            <d2p1:double>115</d2p1:double>
+            <d2p1:double>116</d2p1:double>
+            <d2p1:double>117</d2p1:double>
+            <d2p1:double>118</d2p1:double>
+            <d2p1:double>119</d2p1:double>
+            <d2p1:double>120</d2p1:double>
+            <d2p1:double>121</d2p1:double>
+            <d2p1:double>122</d2p1:double>
+            <d2p1:double>123</d2p1:double>
+            <d2p1:double>124</d2p1:double>
+            <d2p1:double>125</d2p1:double>
+            <d2p1:double>126</d2p1:double>
+            <d2p1:double>127</d2p1:double>
+            <d2p1:double>128</d2p1:double>
+            <d2p1:double>129</d2p1:double>
+            <d2p1:double>130</d2p1:double>
+            <d2p1:double>131</d2p1:double>
+            <d2p1:double>132</d2p1:double>
+            <d2p1:double>133</d2p1:double>
+            <d2p1:double>134</d2p1:double>
+            <d2p1:double>135</d2p1:double>
+            <d2p1:double>136</d2p1:double>
+            <d2p1:double>137</d2p1:double>
+            <d2p1:double>138</d2p1:double>
+            <d2p1:double>139</d2p1:double>
+            <d2p1:double>140</d2p1:double>
+            <d2p1:double>141</d2p1:double>
+            <d2p1:double>142</d2p1:double>
+            <d2p1:double>143</d2p1:double>
+            <d2p1:double>144</d2p1:double>
+            <d2p1:double>145</d2p1:double>
+            <d2p1:double>146</d2p1:double>
+            <d2p1:double>147</d2p1:double>
+            <d2p1:double>148</d2p1:double>
+            <d2p1:double>149</d2p1:double>
+            <d2p1:double>150</d2p1:double>
+            <d2p1:double>151</d2p1:double>
+            <d2p1:double>152</d2p1:double>
+            <d2p1:double>153</d2p1:double>
+            <d2p1:double>154</d2p1:double>
+            <d2p1:double>155</d2p1:double>
+            <d2p1:double>156</d2p1:double>
+            <d2p1:double>157</d2p1:double>
+            <d2p1:double>158</d2p1:double>
+            <d2p1:double>159</d2p1:double>
+            <d2p1:double>160</d2p1:double>
+            <d2p1:double>161</d2p1:double>
+            <d2p1:double>162</d2p1:double>
+            <d2p1:double>163</d2p1:double>
+            <d2p1:double>164</d2p1:double>
+            <d2p1:double>165</d2p1:double>
+            <d2p1:double>166</d2p1:double>
+            <d2p1:double>167</d2p1:double>
+            <d2p1:double>168</d2p1:double>
+            <d2p1:double>169</d2p1:double>
+            <d2p1:double>170</d2p1:double>
+            <d2p1:double>171</d2p1:double>
+            <d2p1:double>172</d2p1:double>
+            <d2p1:double>173</d2p1:double>
+            <d2p1:double>174</d2p1:double>
+            <d2p1:double>175</d2p1:double>
+            <d2p1:double>176</d2p1:double>
+            <d2p1:double>177</d2p1:double>
+            <d2p1:double>178</d2p1:double>
+            <d2p1:double>179</d2p1:double>
+            <d2p1:double>180</d2p1:double>
+            <d2p1:double>181</d2p1:double>
+            <d2p1:double>182</d2p1:double>
+            <d2p1:double>183</d2p1:double>
+            <d2p1:double>184</d2p1:double>
+            <d2p1:double>185</d2p1:double>
+            <d2p1:double>186</d2p1:double>
+            <d2p1:double>187</d2p1:double>
+            <d2p1:double>188</d2p1:double>
+            <d2p1:double>189</d2p1:double>
+            <d2p1:double>190</d2p1:double>
+            <d2p1:double>191</d2p1:double>
+            <d2p1:double>192</d2p1:double>
+            <d2p1:double>193</d2p1:double>
+            <d2p1:double>194</d2p1:double>
+            <d2p1:double>195</d2p1:double>
+            <d2p1:double>196</d2p1:double>
+            <d2p1:double>197</d2p1:double>
+            <d2p1:double>198</d2p1:double>
+            <d2p1:double>199</d2p1:double>
+            <d2p1:double>200</d2p1:double>
+            <d2p1:double>201</d2p1:double>
+            <d2p1:double>202</d2p1:double>
+            <d2p1:double>203</d2p1:double>
+            <d2p1:double>204</d2p1:double>
+            <d2p1:double>205</d2p1:double>
+            <d2p1:double>206</d2p1:double>
+            <d2p1:double>207</d2p1:double>
+            <d2p1:double>208</d2p1:double>
+            <d2p1:double>209</d2p1:double>
+            <d2p1:double>210</d2p1:double>
+            <d2p1:double>211</d2p1:double>
+            <d2p1:double>212</d2p1:double>
+            <d2p1:double>213</d2p1:double>
+            <d2p1:double>214</d2p1:double>
+            <d2p1:double>215</d2p1:double>
+            <d2p1:double>216</d2p1:double>
+            <d2p1:double>217</d2p1:double>
+            <d2p1:double>218</d2p1:double>
+            <d2p1:double>219</d2p1:double>
+            <d2p1:double>220</d2p1:double>
+            <d2p1:double>221</d2p1:double>
+            <d2p1:double>222</d2p1:double>
+            <d2p1:double>223</d2p1:double>
+            <d2p1:double>224</d2p1:double>
+            <d2p1:double>225</d2p1:double>
+            <d2p1:double>226</d2p1:double>
+            <d2p1:double>227</d2p1:double>
+            <d2p1:double>228</d2p1:double>
+            <d2p1:double>229</d2p1:double>
+            <d2p1:double>230</d2p1:double>
+            <d2p1:double>231</d2p1:double>
+            <d2p1:double>232</d2p1:double>
+            <d2p1:double>233</d2p1:double>
+            <d2p1:double>234</d2p1:double>
+            <d2p1:double>235</d2p1:double>
+            <d2p1:double>236</d2p1:double>
+            <d2p1:double>237</d2p1:double>
+            <d2p1:double>238</d2p1:double>
+            <d2p1:double>239</d2p1:double>
+            <d2p1:double>240</d2p1:double>
+            <d2p1:double>241</d2p1:double>
+            <d2p1:double>242</d2p1:double>
+            <d2p1:double>243</d2p1:double>
+            <d2p1:double>244</d2p1:double>
+            <d2p1:double>245</d2p1:double>
+            <d2p1:double>246</d2p1:double>
+            <d2p1:double>247</d2p1:double>
+            <d2p1:double>248</d2p1:double>
+            <d2p1:double>249</d2p1:double>
+            <d2p1:double>250</d2p1:double>
+            <d2p1:double>251</d2p1:double>
+            <d2p1:double>252</d2p1:double>
+            <d2p1:double>253</d2p1:double>
+            <d2p1:double>254</d2p1:double>
+            <d2p1:double>255</d2p1:double>
+            <d2p1:double>256</d2p1:double>
+            <d2p1:double>257</d2p1:double>
+            <d2p1:double>258</d2p1:double>
+            <d2p1:double>259</d2p1:double>
+            <d2p1:double>260</d2p1:double>
+            <d2p1:double>261</d2p1:double>
+            <d2p1:double>262</d2p1:double>
+            <d2p1:double>263</d2p1:double>
+            <d2p1:double>264</d2p1:double>
+            <d2p1:double>265</d2p1:double>
+            <d2p1:double>266</d2p1:double>
+            <d2p1:double>267</d2p1:double>
+            <d2p1:double>268</d2p1:double>
+            <d2p1:double>269</d2p1:double>
+            <d2p1:double>270</d2p1:double>
+            <d2p1:double>271</d2p1:double>
+            <d2p1:double>272</d2p1:double>
+            <d2p1:double>273</d2p1:double>
+            <d2p1:double>274</d2p1:double>
+            <d2p1:double>275</d2p1:double>
+            <d2p1:double>276</d2p1:double>
+            <d2p1:double>277</d2p1:double>
+            <d2p1:double>278</d2p1:double>
+            <d2p1:double>279</d2p1:double>
+            <d2p1:double>280</d2p1:double>
+            <d2p1:double>281</d2p1:double>
+            <d2p1:double>282</d2p1:double>
+            <d2p1:double>283</d2p1:double>
+            <d2p1:double>284</d2p1:double>
+            <d2p1:double>285</d2p1:double>
+            <d2p1:double>286</d2p1:double>
+            <d2p1:double>287</d2p1:double>
+            <d2p1:double>288</d2p1:double>
+            <d2p1:double>289</d2p1:double>
+            <d2p1:double>290</d2p1:double>
+            <d2p1:double>291</d2p1:double>
+            <d2p1:double>292</d2p1:double>
+            <d2p1:double>293</d2p1:double>
+            <d2p1:double>294</d2p1:double>
+            <d2p1:double>295</d2p1:double>
+            <d2p1:double>296</d2p1:double>
+            <d2p1:double>297</d2p1:double>
+            <d2p1:double>298</d2p1:double>
+            <d2p1:double>299</d2p1:double>
+            <d2p1:double>300</d2p1:double>
+          </d4p1:TimeMesh>
+        </d4p1:TimeSettings>
+      </_settings>
+    </d2p1:anyType>
+    <d2p1:anyType z:Id="85" i:type="ProblemView">
+      <Description i:nil="true" />
+      <Project z:Ref="1" i:nil="true" />
+      <Title z:Id="86">Bem Problem 1</Title>
+      <Views z:Id="87" z:Size="1">
+        <d2p1:anyType z:Id="88" i:type="View3D">
+          <CameraState z:Id="89">
+            <OffsetX>0</OffsetX>
+            <OffsetY>0</OffsetY>
+            <OffsetZ>0</OffsetZ>
+            <RotationAngle>73.332857792986317</RotationAngle>
+            <RotationAxisX>-0.98388078619694574</RotationAxisX>
+            <RotationAxisY>0.13153699333630495</RotationAxisY>
+            <RotationAxisZ>0.12114709215051153</RotationAxisZ>
+            <Scale>0.19011406844106465</Scale>
+            <TranslateX>0</TranslateX>
+            <TranslateY>0</TranslateY>
+          </CameraState>
+          <CurrentValueName i:nil="true" />
+          <Parent z:Ref="85" i:nil="true" />
+          <Title z:Id="90">Default</Title>
+          <ViewerState>LightingEnabled MeshLinesVisible</ViewerState>
+        </d2p1:anyType>
+      </Views>
+      <MaterialBuilder z:Ref="56" i:nil="true" />
+      <MeshBuilder z:Ref="4" i:nil="true" />
+      <MeshScaleFactor>1</MeshScaleFactor>
+      <NormalProblem i:nil="true" />
+      <SettingsBuilder z:Ref="74" i:nil="true" />
+      <SymmetryType>PositiveByX PositiveByY NegativeByZ</SymmetryType>
+      <AllowCurvilinearElements>true</AllowCurvilinearElements>
+      <BasisOrder>1</BasisOrder>
+      <BasisType>Lagrange</BasisType>
+      <CoilBuilder z:Ref="53" i:nil="true" />
+      <ProblemType z:Id="91">Anomaly Field Test Problem</ProblemType>
+      <VectorBasisOrder>1</VectorBasisOrder>
+    </d2p1:anyType>
+    <d2p1:anyType z:Id="92" i:type="ProblemView">
+      <Description i:nil="true" />
+      <Project z:Ref="1" i:nil="true" />
+      <Title z:Id="93">Bem Problem 2</Title>
+      <Views z:Id="94" z:Size="1">
+        <d2p1:anyType z:Id="95" i:type="View3D">
+          <CameraState z:Id="96">
+            <OffsetX>0</OffsetX>
+            <OffsetY>0</OffsetY>
+            <OffsetZ>0</OffsetZ>
+            <RotationAngle>0</RotationAngle>
+            <RotationAxisX>0</RotationAxisX>
+            <RotationAxisY>1</RotationAxisY>
+            <RotationAxisZ>0</RotationAxisZ>
+            <Scale>0.19011406844106465</Scale>
+            <TranslateX>0</TranslateX>
+            <TranslateY>0</TranslateY>
+          </CameraState>
+          <CurrentValueName i:nil="true" />
+          <Parent z:Ref="92" i:nil="true" />
+          <Title z:Ref="90" i:nil="true" />
+          <ViewerState>LightingEnabled MeshLinesVisible</ViewerState>
+        </d2p1:anyType>
+      </Views>
+      <MaterialBuilder z:Ref="56" i:nil="true" />
+      <MeshBuilder z:Ref="8" i:nil="true" />
+      <MeshScaleFactor>1</MeshScaleFactor>
+      <NormalProblem i:nil="true" />
+      <SettingsBuilder z:Ref="74" i:nil="true" />
+      <SymmetryType>PositiveByX PositiveByY NegativeByZ</SymmetryType>
+      <AllowCurvilinearElements>true</AllowCurvilinearElements>
+      <BasisOrder>1</BasisOrder>
+      <BasisType>Lagrange</BasisType>
+      <CoilBuilder z:Ref="53" i:nil="true" />
+      <ProblemType z:Ref="91" i:nil="true" />
+      <VectorBasisOrder>1</VectorBasisOrder>
+    </d2p1:anyType>
+    <d2p1:anyType z:Id="97" i:type="ProblemView">
+      <Description i:nil="true" />
+      <Project z:Ref="1" i:nil="true" />
+      <Title z:Id="98">Bem Problem 3</Title>
+      <Views z:Id="99" z:Size="1">
+        <d2p1:anyType z:Id="100" i:type="View3D">
+          <CameraState z:Id="101">
+            <OffsetX>0</OffsetX>
+            <OffsetY>0</OffsetY>
+            <OffsetZ>0</OffsetZ>
+            <RotationAngle>0</RotationAngle>
+            <RotationAxisX>0</RotationAxisX>
+            <RotationAxisY>1</RotationAxisY>
+            <RotationAxisZ>0</RotationAxisZ>
+            <Scale>0.19011406844106465</Scale>
+            <TranslateX>0</TranslateX>
+            <TranslateY>0</TranslateY>
+          </CameraState>
+          <CurrentValueName i:nil="true" />
+          <Parent z:Ref="97" i:nil="true" />
+          <Title z:Ref="90" i:nil="true" />
+          <ViewerState>LightingEnabled MeshLinesVisible</ViewerState>
+        </d2p1:anyType>
+      </Views>
+      <MaterialBuilder z:Ref="56" i:nil="true" />
+      <MeshBuilder z:Ref="12" i:nil="true" />
+      <MeshScaleFactor>1</MeshScaleFactor>
+      <NormalProblem i:nil="true" />
+      <SettingsBuilder z:Ref="74" i:nil="true" />
+      <SymmetryType>PositiveByX PositiveByY NegativeByZ</SymmetryType>
+      <AllowCurvilinearElements>true</AllowCurvilinearElements>
+      <BasisOrder>1</BasisOrder>
+      <BasisType>Lagrange</BasisType>
+      <CoilBuilder z:Ref="53" i:nil="true" />
+      <ProblemType z:Ref="91" i:nil="true" />
+      <VectorBasisOrder>1</VectorBasisOrder>
+    </d2p1:anyType>
+  </Items>
+</Project>

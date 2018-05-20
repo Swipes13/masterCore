@@ -19,12 +19,15 @@ class ShaderProgram(val shaders: Array[Shader]) {
 
 object ShaderProgram {
   @throws[Exception]
-  def create(shaders: Array[Shader], attributes: Array[String], uniforms: Array[String] = Array.empty): ShaderProgram = {
+  def create(shaders: Array[Shader]): ShaderProgram = { // , attributes: Array[String], uniforms: Array[String] = Array.empty
     val program = new ShaderProgram(shaders)
     shaders.foreach(s => glAttachShader(program.id, s.id))
-    attributes.zipWithIndex.foreach { case(a, i) => glBindAttribLocation(program.id, i, a) }
+    val vShader = shaders.find(_.`type`.id == ShaderType.Vertex.id).map(v => v.asInstanceOf[VertexShader])
+
+    vShader.foreach(v => v.attribs.zipWithIndex.foreach { case(a, i) => glBindAttribLocation(program.id, i, a) })
     program.link()
-    program.prepareUniforms(uniforms)
+    vShader.foreach(v => program.prepareUniforms(v.uniforms))
+
     program
   }
   def check[R](block: => R, pid: Int, state: Int, message: String): Unit = {

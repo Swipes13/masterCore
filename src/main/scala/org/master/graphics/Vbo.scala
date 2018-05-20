@@ -15,16 +15,16 @@ object BufferType extends Enumeration {
 class Vbo(val bufferType: BufferType.Value) {
   val id: Int = glGenBuffers
   def bind(): Vbo = { glBindBuffer(bufferType.id, id); this }
-  def prepareData(buffer: ByteBuffer): Vbo = { glBufferData(bufferType.id, buffer, GL_STATIC_DRAW); this }
+  def prepareData(buffer: IntBuffer): Vbo = { glBufferData(bufferType.id, buffer, GL_STATIC_DRAW); this }
   def prepareData(buffer: FloatBuffer): Vbo = { glBufferData(bufferType.id, buffer, GL_STATIC_DRAW); this }
 }
 
 object Vbo {
   def create(bufferType: BufferType.Value, values: Array[Float]): Vbo = new Vbo(bufferType).bind().prepareData(prepareBuffer(values))
-  def create(ibuffer: ByteBuffer): Vbo = new Vbo(BufferType.Index).bind().prepareData(ibuffer)
+  def create(ibuffer: IntBuffer): Vbo = new Vbo(BufferType.Index).bind().prepareData(ibuffer)
 
-  def prepareBuffer(v: Array[Byte]): ByteBuffer = {
-    val buffer = BufferUtils.createByteBuffer(v.length)
+  def prepareBuffer(v: Array[Int]): IntBuffer = {
+    val buffer = BufferUtils.createIntBuffer(v.length)
     buffer.put(v).flip()
     buffer
   }
