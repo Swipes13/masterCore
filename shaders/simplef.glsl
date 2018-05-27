@@ -9,6 +9,6 @@ in vec3 light;
 out vec4 out_color;
 
 void main() {
-    out_color = vec4(0, 0, 0, 1);// texture(texture_diffuse, tutv);
+    out_color = vec4(1, 1, 1, 1);// texture(texture_diffuse, tutv);
     out_color.rgb *= dot(norm, light);
 }

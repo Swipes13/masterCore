@@ -9,8 +9,8 @@ import org.lwjgl.opengl.GL30._
 object DrawType extends Enumeration {
   type DrawType = Value
   val None = 0
-  val LineLoop: DrawType.Value = Value(GL_LINE_LOOP)
-  val Triangles: DrawType.Value = Value(GL_TRIANGLE_STRIP)
+  val Lines: DrawType.Value = Value(GL_LINES)
+  val Triangles: DrawType.Value = Value(GL_TRIANGLES)
 }
 
 class Vao(val drawType: DrawType.Value, val vertexCount: Int, val length: Int) {

@@ -9,7 +9,8 @@ import org.lwjgl.opengl.{GL, GLUtil}
 import org.lwjgl.opengl.GL11._
 import org.master.core.{CoreUnit, Window}
 import org.master.core
-import org.master.graphics.scene.{LabelTTF, Node, Scene}
+import org.master.graphics.scene.{Node, Scene}
+import org.master.http_client.QuasarClient
 
 class Graphics extends CoreUnit {
   private var _shaderPrograms = Array.empty[ShaderProgram]
@@ -17,6 +18,7 @@ class Graphics extends CoreUnit {
   private val _camera = new Camera(); _camera.withName("viewMatrix")
   private val _testRed = new Float1U(0.5f); _testRed.withName("red")
   private val _testLight = new Float3U(0, 0, -1); _testLight.withName("lightDir")
+  private val _testView = new Float3U(0, 0, -1); _testView.withName("viewDir")
 
   private val _scene = new Scene(); _scene.node = Node.create()
 
@@ -28,10 +30,9 @@ class Graphics extends CoreUnit {
     glViewport(0, 0, Window.size.width * 2, Window.size.height * 2)
 //    glShadeModel(GL_SMOOTH)
 //    glClearDepth(1.0f)
-    glDisable(GL_DEPTH_TEST)
+    glEnable(GL_DEPTH_TEST)
 //    glDepthFunc(GL_LEQUAL)
 //    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
-
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
@@ -42,19 +43,20 @@ class Graphics extends CoreUnit {
   }
 
   def initTestScene(): Unit = {
-//    val l = LabelTTF.create(24, antialias = true)
 //    l.node = Node.create()
 //    l.node.addComponent(l)
 //    l.string = "test"
     _scene.node.addComponent(_scene)
 //    _scene.node.addChild(l.node)
+
+
   }
 
   def prepareShaders(): Unit = {
     val b = scala.collection.mutable.ListBuffer.empty[ShaderProgram]
     val colorSp = ShaderProgram.create(Array(
-       Shader.create("shaders/simplev.glsl", ShaderType.Vertex),
-       Shader.create("shaders/simplef.glsl", ShaderType.Fragment)
+       Shader.create("shaders/v_cookTorrance.glsl", ShaderType.Vertex),
+       Shader.create("shaders/f_cookTorrance.glsl", ShaderType.Fragment)
     ))
     addVaosToProgram(colorSp)
     b += colorSp
@@ -76,6 +78,8 @@ class Graphics extends CoreUnit {
     program.updateLocForU(this._projMatrix)
     program.updateLocForU(this._camera)
     program.updateLocForU(this._testRed)
+    program.updateLocForU(this._testView)
+    program.updateLocForU(this._testLight)
 
     program.uniformLocs.foreach(println)
 
@@ -86,8 +90,13 @@ class Graphics extends CoreUnit {
       new Vertex(VertexElement(1, 1),   VertexElement(0, 0, 1), VertexElement(1, 1))
     )
 //    program.addVao(Vao.createInterleaved(DrawType.Triangles, vertexes, Array[Int](0, 1, 2, 2, 1, 3)))
-    val mesh = Mesh.fromFile("mesh/1.mesh")
-    mesh.vao.foreach(program.addVao)
+    QuasarClient.init()
+    val mesh = Mesh.fromFile("mesh/3.mesh")
+    mesh.vao.foreach { case (physicalIndex, vao) =>
+      if (physicalIndex == 1) program.addVao(vao)
+    }
+
+    mesh.nodes
   }
 
   override def update(dt: Double): Unit = {
@@ -95,7 +104,8 @@ class Graphics extends CoreUnit {
     _textures.foreach(t => t.bind())
     _shaderPrograms.foreach { p =>
       _projMatrix.set()
-      _testLight.update(_camera.look.negate(new Vector3f())).set()
+//      _testLight.update(_camera.look.negate(new Vector3f())).set()
+      _testView.update(_camera.look.negate(new Vector3f())).set()
       _camera.updateWithRender()
       p.render()
     }

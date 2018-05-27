@@ -7,11 +7,11 @@ object MeshFormat {
     MeshFormat(format(0), format(1), format(2).toInt)
   }
 }
-case class PhysicalName(unknownNumber: Int, number: Int, name: String)
+case class PhysicalName(dim: Int, name: String)
 object PhysicalName {
-  def fromString(string: String): PhysicalName = {
+  def fromString(string: String): (Int, PhysicalName) = {
     val pn = string.split(Array(' ', '\t'))
-    PhysicalName(pn(0).toInt, pn(1).toInt, pn(2))
+    (pn(1).toInt, PhysicalName(pn(0).toInt, pn(2).filter(c => c != '"')))
   }
 }
 case class MeshNode(index: Long, x: Float, y: Float, z: Float)
@@ -21,14 +21,14 @@ object MeshNode {
     MeshNode(n(0).toInt, n(1).toFloat, n(2).toFloat, n(3).toFloat)
   }
 }
-case class MeshElement(index: Long, `type`: Int, numberOfTags: Int, tags: List[Int], verts: List[Int])
+case class MeshElement(index: Long, `type`: Int, tags: List[Int], nodeIndexes: List[Int])
 object MeshElement {
   def fromString(string: String): MeshElement = {
     val e = string.split(Array(' ', '\t'))
     val (index, t, numberOfTags) = (e(0).toLong, e(1).toInt, e(2).toInt)
     val tags = e.slice(3, 3 + numberOfTags).map(_.toInt).toList
     val verts = e.slice(3 + numberOfTags, e.length).map(_.toInt).toList
-    MeshElement(index, t, numberOfTags, tags, verts)
+    MeshElement(index, t, tags, verts)
   }
 }
 object MeshElementType extends Enumeration {
@@ -36,6 +36,12 @@ object MeshElementType extends Enumeration {
 
   val Triangle = Value(2)
   val Tetrahedron = Value(4)
+
+  def fromInt(t: Int): Option[MeshElementType] = t match {
+    case 2 => Some(MeshElementType.Triangle)
+    case 4 => Some(MeshElementType.Tetrahedron)
+    case _ => None
+  }
   // TODO: support other types
 }
 
