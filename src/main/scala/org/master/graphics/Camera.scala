@@ -11,9 +11,9 @@ class Camera extends Matrix4fU {
   Keys.addKeyPressCb(KeyType.D, () => strafe(deltaCf))
   Keys.addKeyPressCb(KeyType.LShift, () => speed = 5)
   Keys.addKeyReleaseCb(KeyType.LShift, () => speed = 1)
-  Keys.addMousePosCb((pos: MousePos) => { pitch(-pos.y/100); rotY(pos.x/100) })
+  Keys.addMousePosCb((pos: MousePos) => { pitch(pos.y/100); rotY(pos.x/100) })
 
-  var position = new Vector3f(0, 0, 1)
+  var position = new Vector3f(0, 0, -1)
   var look = new Vector3f(0, 0, -1)
   var right = new Vector3f(1, 0, 0)
   var up = new Vector3f(0, 1, 0)

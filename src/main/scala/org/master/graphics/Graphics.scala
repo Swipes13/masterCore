@@ -37,6 +37,7 @@ class Graphics extends CoreUnit {
   override def init(): Boolean = core.Utils.logging() {
     GL.createCapabilities
     GLUtil.setupDebugMessageCallback
+    import org.lwjgl.glfw.GLFWErrorCallback
 //    glViewport(0, 0, Window.size.width * 2, Window.size.height * 2)
 //    glShadeModel(GL_SMOOTH)
     glClearDepth(1.0f)
@@ -56,8 +57,9 @@ class Graphics extends CoreUnit {
 
     Window.context.updateGlfwWindow()
 
-    _mainFrameBuffer = FrameBuffer.create(0, GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, new Vector4f(1, 1, 1, 1),Window.context.getWindowSize.x * 2, Window.context.getWindowSize.y * 2)
-
+    _mainFrameBuffer = new FrameBuffer(0, Window.context.getWindowSize.x * 2, Window.context.getWindowSize.y * 2)
+      .setFlags(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+      .setColor(new Vector4f(1, 1, 1, 1))
     true
   }
 
@@ -122,22 +124,39 @@ class Graphics extends CoreUnit {
     _mainFrameBuffer.draw(() => {
       _testGui.update(dt)
     })
+//    _mainFrameBuffer.draw(() => myRender)
   }
 
   private def myRender(): Unit = {
     glEnable(GL_DEPTH_TEST)
-    glEnable(GL_STENCIL_TEST)
+//    glEnable(GL_STENCIL_TEST)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    glEnable(GL_CULL_FACE)
-    glCullFace(GL_BACK)
+//    glEnable(GL_CULL_FACE)
+//    glCullFace(GL_BACK)
+//
 
-    _shaderPrograms.foreach { p =>
+    _shaderPrograms.foreach { p => p.use()
       _projMatrix.set()
       //      _testLight.update(_camera.look.negate(new Vector3f())).set()
       _testView.update(_camera.look.negate(new Vector3f())).set()
       _camera.updateWithRender()
       p.render()
     }
+
+//    val aspect = Window.size.width.toFloat / Window.size.height.toFloat
+//    glMatrixMode(GL_PROJECTION);
+//    glLoadIdentity();
+//    glOrtho(-1.0f * aspect, +1.0f * aspect, -1.0f, +1.0f, -1.0f, +1.0f);
+//
+//    /* Rotate a bit and draw a quad */
+//    glMatrixMode(GL_MODELVIEW);
+//    glRotatef(1 /** elapsed*/, 0, 0, 1);
+//    glBegin(GL_QUADS);
+//    glVertex2f(-0.5f, -0.5f);
+//    glVertex2f(+0.5f, -0.5f);
+//    glVertex2f(+0.5f, +0.5f);
+//    glVertex2f(-0.5f, +0.5f);
+//    glEnd();
   }
   def nvgRender(): Unit = {
     import org.lwjgl.nanovg.NVGColor

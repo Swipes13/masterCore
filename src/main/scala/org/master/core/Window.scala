@@ -37,7 +37,7 @@ class Window(val fullscreen: Boolean) extends CoreUnit { // TODO: write correct 
   def cbKeeper: DefaultCallbackKeeper = _keeper
 
   override def init(): Boolean = Utils.logging() {
-    GLFWErrorCallback.createPrint(System.err).set
+    GLFWErrorCallback.createPrint(Console.out).set
 
     System.setProperty("joml.nounsafe", "true")
     System.setProperty("java.awt.headless", "true")

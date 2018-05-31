@@ -49,7 +49,7 @@ class Gui {
     }
     if (_nvgContext != 0) {
       _frameBuffer = FrameBuffer.create(1000, 1000)
-      val widget = new Widget(10, 10, 500, 500)
+      val widget = new Widget(10, 10, 1000, 1000)
       widget.setCloseable(false)
       widget.setMinimizable(false)
       widget.setResizable(true)

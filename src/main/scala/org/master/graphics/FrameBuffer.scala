@@ -45,14 +45,4 @@ object FrameBuffer {
     frameBuffer.unbind()
     frameBuffer
   }
-  def create(id: Int, flags: Int, clearColor: Vector4f, width: Int, height: Int): FrameBuffer = {
-    val frameBuffer = new FrameBuffer(id, width, height).bind().setFlags(flags).setColor(clearColor)
-    frameBuffer.texture = Texture.create(width, height)
-    frameBuffer.depthBuffer = RenderBuffer.create(width, height)
-
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, frameBuffer.texture.id, 0)
-    glDrawBuffer(GL_COLOR_ATTACHMENT0)
-    frameBuffer.unbind()
-    frameBuffer
-  }
 }

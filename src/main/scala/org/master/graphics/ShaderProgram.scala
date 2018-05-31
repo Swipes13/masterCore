@@ -8,7 +8,7 @@ class ShaderProgram(val shaders: Array[Shader]) {
   var uniformLocs: Map[String, Int] = _
   private var _vaos = Array.empty[Vao]
 
-  def render(): Unit = use()._vaos.foreach(Vao.render)
+  def render(): Unit = _vaos.foreach(Vao.render)
   def use(): ShaderProgram = { glUseProgram(id); this }
   def validate(): Unit = ShaderProgram.check(glValidateProgram(id), id, GL_VALIDATE_STATUS, "validate shader error. ")
   def link(): Unit = ShaderProgram.check(glLinkProgram(id), id, GL_LINK_STATUS, "link shader error. ")
