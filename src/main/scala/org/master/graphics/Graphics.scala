@@ -6,24 +6,18 @@ package org.master.graphics
 
 import java.awt.image.BufferedImage
 import java.io.{File, IOException}
-import java.nio.ByteBuffer
 
-import org.joml.Vector3f
-import org.liquidengine.legui.component.Frame
+import org.joml.{Vector3f, Vector4f}
 import org.lwjgl.opengl.{GL, GLUtil}
-import org.lwjgl.opengl.GL11._
-import org.lwjgl.opengles.INTELFramebufferCMAA
 import org.master.core.{CoreUnit, Window}
 import org.master.core
 import org.master.graphics.scene.{Node, Scene}
 import org.master.graphics.ui.Gui
 import org.master.http_client.QuasarClient
-import org.lwjgl.opengl.GL14
 import org.lwjgl.opengl.GL11._
-import org.lwjgl.opengl.EXTFramebufferObject._
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
-import java.nio.ByteBuffer
+import org.lwjgl.nanovg.NanoVG._
 import javax.imageio.ImageIO
 
 class Graphics extends CoreUnit {
@@ -33,28 +27,22 @@ class Graphics extends CoreUnit {
   private val _testRed = new Float1U(0.5f); _testRed.withName("red")
   private val _testLight = new Float3U(0, 0, -1); _testLight.withName("lightDir")
   private val _testView = new Float3U(0, 0, -1); _testView.withName("viewDir")
+  private var _mainFrameBuffer: FrameBuffer = _
 
-  private val _testGui = new Gui()
+  private var _testGui: Gui = _
 
   private val _scene = new Scene(); _scene.node = Node.create()
 
   private var _textures = Array.empty[Texture2D]
   override def init(): Boolean = core.Utils.logging() {
-
     GL.createCapabilities
     GLUtil.setupDebugMessageCallback
-
-    _testGui.init()
-
-    glClearColor(0.05f, 0.45f, 0.45f, 0.0f)
-    Window.context.updateGlfwWindow()
-    val windowSize = Window.context.getWindowSize
-    glViewport(0, 0, windowSize.x * 2, windowSize.y * 2)
 //    glViewport(0, 0, Window.size.width * 2, Window.size.height * 2)
 //    glShadeModel(GL_SMOOTH)
-//    glClearDepth(1.0f)
+    glClearDepth(1.0f)
     glEnable(GL_DEPTH_TEST)
-//    glDepthFunc(GL_LEQUAL)
+    glEnable(GL_STENCIL_TEST)
+    glDepthFunc(GL_LEQUAL)
 //    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -63,12 +51,15 @@ class Graphics extends CoreUnit {
     addTextures()
     initTestScene()
 
+    _testGui = new Gui()
+    _testGui.init()
+
+    Window.context.updateGlfwWindow()
+
+    _mainFrameBuffer = FrameBuffer.create(0, GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, new Vector4f(1, 1, 1, 1),Window.context.getWindowSize.x * 2, Window.context.getWindowSize.y * 2)
+
     true
   }
-
-  var framebufferID: Int = _
-  var colorTextureID: Int = _
-  var depthRenderBufferID: Int = _
 
   def initTestScene(): Unit = {
 //    l.node = Node.create()
@@ -77,22 +68,6 @@ class Graphics extends CoreUnit {
     _scene.node.addComponent(_scene)
 //    _scene.node.addChild(l.node)
 
-    framebufferID = glGenFramebuffersEXT // create a new framebuffer
-    colorTextureID = glGenTextures // and a new texture used as a color buffer
-    depthRenderBufferID = glGenRenderbuffersEXT // And finally a new depthbuffer
-
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebufferID) // switch to the new framebuffer
-    glBindTexture(GL_TEXTURE_2D, colorTextureID) // Bind the colorbuffer texture
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR) // make it linear filterd
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 512, 512, 0, GL_RGBA, GL_INT, null.asInstanceOf[ByteBuffer]) // Create the texture data
-    glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, colorTextureID, 0) // attach it to the framebuffer
-
-    // initialize depth renderbuffer
-    glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthRenderBufferID) // bind the depth renderbuffer
-    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL14.GL_DEPTH_COMPONENT24, 512, 512) // get the data space for it
-    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, depthRenderBufferID) // bind it to the renderbuffer
-
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0)
   }
 
   def prepareShaders(): Unit = {
@@ -134,7 +109,7 @@ class Graphics extends CoreUnit {
     )
 //    program.addVao(Vao.createInterleaved(DrawType.Triangles, vertexes, Array[Int](0, 1, 2, 2, 1, 3)))
 //    QuasarClient.init()
-    val mesh = Mesh.fromFile("mesh/test.mesh")
+    val mesh = Mesh.fromFile("mesh/test2.mesh")
     mesh.vao.foreach { case (physicalIndex, vao) =>
       if (physicalIndex == 1) program.addVao(vao)
     }
@@ -143,32 +118,66 @@ class Graphics extends CoreUnit {
   }
 
   override def update(dt: Double): Unit = {
-    glBindTexture(GL_TEXTURE_2D, 0)                          // unlink textures because if we dont it all is gonna fail
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebufferID)        // switch to rendering on our FBO
+    _testGui.frameBuffer().draw(myRender)
+    _mainFrameBuffer.draw(() => {
+      _testGui.update(dt)
+    })
+  }
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
-    _textures.foreach(t => t.bind())
-
+  private def myRender(): Unit = {
     glEnable(GL_DEPTH_TEST)
+    glEnable(GL_STENCIL_TEST)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+    glEnable(GL_CULL_FACE)
+    glCullFace(GL_BACK)
+
     _shaderPrograms.foreach { p =>
       _projMatrix.set()
-//      _testLight.update(_camera.look.negate(new Vector3f())).set()
+      //      _testLight.update(_camera.look.negate(new Vector3f())).set()
       _testView.update(_camera.look.negate(new Vector3f())).set()
       _camera.updateWithRender()
       p.render()
     }
+  }
+  def nvgRender(): Unit = {
+    import org.lwjgl.nanovg.NVGColor
+    glEnable(GL_BLEND)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+    nvgBeginFrame(_testGui.nvgContext, _testGui.frameBuffer().width, _testGui.frameBuffer().height, 1)
 
+    val nvgColorOne: NVGColor = NVGColor.calloc
+    val nvgColorTwo: NVGColor = NVGColor.calloc
 
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0)
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    _testGui.update(dt)
+    nvgColorOne.r(0)
+    nvgColorOne.g(1)
+    nvgColorOne.b(0)
+    nvgColorOne.a(1)
 
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebufferID)
-//    Node.draw(_scene.node, dt)
+    nvgColorTwo.r(0)
+    nvgColorTwo.g(0)
+    nvgColorTwo.b(0)
+    nvgColorTwo.a(1)
+
+    nvgTranslate(_testGui.nvgContext, _testGui.frameBuffer().width / 2f, _testGui.frameBuffer().height / 2f)
+    nvgRotate(_testGui.nvgContext, 5)
+
+    nvgBeginPath(_testGui.nvgContext)
+    nvgRect(_testGui.nvgContext, -_testGui.frameBuffer().width / 4f, -_testGui.frameBuffer().height / 4f, _testGui.frameBuffer().width / 2f, _testGui.frameBuffer().height / 2f)
+    nvgStrokeColor(_testGui.nvgContext, nvgColorTwo)
+    nvgStroke(_testGui.nvgContext)
+
+    nvgBeginPath(_testGui.nvgContext)
+    nvgRect(_testGui.nvgContext, -_testGui.frameBuffer().width / 4f, -_testGui.frameBuffer().height / 4f, _testGui.frameBuffer().width / 2f, _testGui.frameBuffer().height / 2f)
+    nvgFillColor(_testGui.nvgContext, nvgColorOne)
+    nvgFill(_testGui.nvgContext)
+
+    nvgColorOne.free()
+    nvgColorTwo.free()
+
+    nvgEndFrame(_testGui.nvgContext)
   }
 
-  def saveRtToFile(fileName: String) = {
+  def saveRtToFile(fileName: String): Boolean = {
     GL11.glReadBuffer(GL11.GL_FRONT)
     val width = Window.size.width
     val height = Window.size.height
@@ -202,5 +211,10 @@ class Graphics extends CoreUnit {
 
 }
 
-object Graphics extends Graphics() {}
+object Graphics extends Graphics() {
+  def clearFrameBuffer(flags: Int, color: Vector4f): Unit = {
+    glClearColor(color.x, color.y, color.y, color.z)
+    glClear(flags)
+  }
+}
 

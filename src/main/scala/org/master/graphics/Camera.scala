@@ -38,7 +38,9 @@ class Camera extends Matrix4fU {
     }
   }
 
-  def walk(delta: Float): Vector3f = position.add(look.mul(delta * speed, new Vector3f()))
+  def walk(delta: Float): Vector3f = {
+    position.add(look.mul(delta * speed, new Vector3f()))
+  }
   def strafe(delta: Float): Vector3f = position.add(right.mul(delta * speed, new Vector3f()))
   def pitch(delta: Double): Unit = {
     val r = new Matrix4f().rotation(delta.toFloat, right)

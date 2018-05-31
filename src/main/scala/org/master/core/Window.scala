@@ -8,6 +8,8 @@ import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW._
 import org.lwjgl.glfw.{GLFWErrorCallback, GLFWWindowFocusCallback}
 import org.lwjgl.system.MemoryUtil.NULL
+import org.liquidengine.legui.animation.Animator
+import org.liquidengine.legui.system.layout.LayoutManager
 
 import scala.collection.mutable.ListBuffer
 
@@ -21,7 +23,7 @@ case class Size(width: Int = 0, height: Int = 0)
 
 class Window(val fullscreen: Boolean) extends CoreUnit { // TODO: write correct fullscreen
   private var changeFocusCbs = scala.collection.immutable.List.empty[(Boolean) => Unit]
-  private var _framesForEvents = ListBuffer.empty[Frame]
+  private var _framesForUpdate = ListBuffer.empty[Frame]
 
   private var _ptr = 0L
   private var _size = Size()
@@ -50,6 +52,7 @@ class Window(val fullscreen: Boolean) extends CoreUnit { // TODO: write correct 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, org.lwjgl.opengl.GL11.GL_TRUE)
+    glfwWindowHint(GLFW_SAMPLES, 4)
 
     _size = getMonitorSize
     println(_size)
@@ -97,8 +100,12 @@ class Window(val fullscreen: Boolean) extends CoreUnit { // TODO: write correct 
   override def update(dt: Double): Unit = {
     glfwPollEvents()
     glfwSwapBuffers(_ptr)
-    _framesForEvents.foreach(_systemEventProcessor.processEvents(_, context))
+
+    // legui update needed
+    _framesForUpdate.foreach(_systemEventProcessor.processEvents(_, context))
     EventProcessor.getInstance.processEvents()
+    _framesForUpdate.foreach(LayoutManager.getInstance.layout(_))
+    Animator.getInstance.runAnimations()
   }
 
   private def getMonitorSize = {
@@ -106,5 +113,5 @@ class Window(val fullscreen: Boolean) extends CoreUnit { // TODO: write correct 
     Size(s.width(), s.height())
   }
 
-  def addFrameForEvents(frame: Frame): ListBuffer[Frame] = _framesForEvents += frame
+  def addFrameForUpdate(frame: Frame): ListBuffer[Frame] = _framesForUpdate += frame
 }
