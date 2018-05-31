@@ -2,7 +2,7 @@ package org.master.core
 
 import org.lwjgl.glfw.GLFW._
 import org.lwjgl.glfw.{GLFWCursorPosCallback, GLFWKeyCallback, GLFWWindowFocusCallbackI}
-import org.lwjgl.BufferUtils
+import org.master.core.KeyType.KeyType
 
 /**
   * Created by valentin on 25/02/2018.
@@ -33,21 +33,23 @@ class Keys extends CoreUnit {
   var mousePos = MousePos(0, 0)
 
   override def init(): Boolean = Utils.logging() {
-    glfwSetKeyCallback(Window.ptr, (window: Long, key: Int, scanCode: Int, action: Int, mods: Int) => {
-      if (key == KeyType.Escape.id && action == GLFW_RELEASE) glfwSetWindowShouldClose(window, true)
-      keyPressCbs.foreach { case (t, cbs) =>
-        if (key == t) {
-          if (action == GLFW_PRESS) cbs.foreach(_.active = true)
-          else if (action == GLFW_RELEASE) cbs.foreach(_.active = false)
+    Window.cbKeeper.getChainKeyCallback.add(new GLFWKeyCallback() {
+      override def invoke(window: Long, key: Int, scancode: Int, action: Int, mods: Int): Unit = {
+        if (key == KeyType.Escape.id && action == GLFW_RELEASE) glfwSetWindowShouldClose(window, true)
+        keyPressCbs.foreach { case (t, cbs) =>
+          if (key == t) {
+            if (action == GLFW_PRESS) cbs.foreach(_.active = true)
+            else if (action == GLFW_RELEASE) cbs.foreach(_.active = false)
+          }
         }
+        keyReleaseCbs.foreach { case (t, cbs) => if (key == t) cbs.foreach(_.func()) }
       }
-      keyReleaseCbs.foreach { case (t, cbs) => if (key == t) cbs.foreach(_.func()) }
     })
     Window.addFocusCb((focused: Boolean) => { if (focused) this.setCursorUpdateCallback() })
     true
   }
-  def addKeyPressCb(t: Int, cb: () => Unit): Unit = keyPressCbs = addKeyCb(keyPressCbs, t, cb)
-  def addKeyReleaseCb(t: Int, cb: () => Unit): Unit = keyReleaseCbs = addKeyCb(keyReleaseCbs, t, cb)
+  def addKeyPressCb(t: KeyType, cb: () => Unit): Unit = keyPressCbs = addKeyCb(keyPressCbs, t.id, cb)
+  def addKeyReleaseCb(t: KeyType, cb: () => Unit): Unit = keyReleaseCbs = addKeyCb(keyReleaseCbs, t.id, cb)
   private def addKeyCb(map: scala.collection.immutable.Map[Int, scala.collection.immutable.List[KeyFunc]], t: Int, cb: () => Unit) = {
     val newList = map.get(t) match {
       case Some(list) => list :+ KeyFunc(cb)
@@ -57,12 +59,16 @@ class Keys extends CoreUnit {
   }
   def addMousePosCb(cb: (MousePos) => Unit): Unit = mousePosCbs = mousePosCbs :+ cb
   private def setCursorUpdateCallback() = {
-    glfwSetCursorPosCallback(Window.ptr, (window: Long, x: Double, y: Double) => {
-      mousePos = MousePos(x, y)
-      glfwSetCursorPosCallback(Window.ptr, cursosPosCallback)
+    Window.cbKeeper.getChainCursorPosCallback.add(new GLFWCursorPosCallback() {
+      override def invoke(window: Long, x: Double, y: Double): Unit = {
+        mousePos = MousePos(x, y)
+        Window.cbKeeper.getChainCursorPosCallback.set(1, new GLFWCursorPosCallback() {
+          override def invoke(window: Long, xpos: Double, ypos: Double): Unit = cursorPosCallback(window, xpos, ypos)
+        })
+      }
     })
   }
-  private def cursosPosCallback(window: Long, x: Double, y: Double): Unit = {
+  private def cursorPosCallback(window: Long, x: Double, y: Double): Unit = {
     val delta = MousePos(x, y) - mousePos
     mousePos = MousePos(x, y)
     mousePosCbs.foreach(f => f(delta))

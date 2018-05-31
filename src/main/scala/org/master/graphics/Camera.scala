@@ -5,12 +5,12 @@ import org.master.core.{KeyType, Keys, MousePos}
 
 class Camera extends Matrix4fU {
   val deltaCf = 0.01f
-  Keys.addKeyPressCb(KeyType.W.id, () => walk(-deltaCf))
-  Keys.addKeyPressCb(KeyType.A.id, () => strafe(-deltaCf))
-  Keys.addKeyPressCb(KeyType.S.id, () => walk(deltaCf))
-  Keys.addKeyPressCb(KeyType.D.id, () => strafe(deltaCf))
-  Keys.addKeyPressCb(KeyType.LShift.id, () => speed = 5)
-  Keys.addKeyReleaseCb(KeyType.LShift.id, () => speed = 1)
+  Keys.addKeyPressCb(KeyType.W, () => walk(-deltaCf))
+  Keys.addKeyPressCb(KeyType.A, () => strafe(-deltaCf))
+  Keys.addKeyPressCb(KeyType.S, () => walk(deltaCf))
+  Keys.addKeyPressCb(KeyType.D, () => strafe(deltaCf))
+  Keys.addKeyPressCb(KeyType.LShift, () => speed = 5)
+  Keys.addKeyReleaseCb(KeyType.LShift, () => speed = 1)
   Keys.addMousePosCb((pos: MousePos) => { pitch(-pos.y/100); rotY(pos.x/100) })
 
   var position = new Vector3f(0, 0, 1)
