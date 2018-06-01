@@ -19,7 +19,7 @@ class ShaderProgram(val shaders: Array[Shader]) {
 
 object ShaderProgram {
   @throws[Exception]
-  def create(shaders: Array[Shader]): ShaderProgram = { // , attributes: Array[String], uniforms: Array[String] = Array.empty
+  def create(shaders: Array[Shader]): ShaderProgram = {
     val program = new ShaderProgram(shaders)
     shaders.foreach(s => glAttachShader(program.id, s.id))
     val vShader = shaders.find(_.`type`.id == ShaderType.Vertex.id).map(v => v.asInstanceOf[VertexShader])

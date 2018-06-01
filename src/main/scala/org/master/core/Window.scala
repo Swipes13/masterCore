@@ -10,6 +10,8 @@ import org.lwjgl.glfw.{GLFWErrorCallback, GLFWWindowFocusCallback}
 import org.lwjgl.system.MemoryUtil.NULL
 import org.liquidengine.legui.animation.Animator
 import org.liquidengine.legui.system.layout.LayoutManager
+import org.lwjgl.opengl.GL
+import org.master.graphics.ui.NanoVgContext
 
 import scala.collection.mutable.ListBuffer
 
@@ -22,7 +24,7 @@ object Window extends Window(fullscreen = false)
 case class Size(width: Int = 0, height: Int = 0)
 
 class Window(val fullscreen: Boolean) extends CoreUnit { // TODO: write correct fullscreen
-  private var changeFocusCbs = scala.collection.immutable.List.empty[(Boolean) => Unit]
+  private var _changeFocusCbs = scala.collection.immutable.List.empty[(Boolean) => Unit]
   private var _framesForUpdate = ListBuffer.empty[Frame]
 
   private var _ptr = 0L
@@ -31,10 +33,13 @@ class Window(val fullscreen: Boolean) extends CoreUnit { // TODO: write correct 
   private var _context: Context = _
   private val _keeper = new DefaultCallbackKeeper
   private val _systemEventProcessor = new SystemEventProcessor
+  private var _nvgContext: NanoVgContext = _
+
   def size: Size = _size
   def ptr: Long = _ptr
   def context: Context = _context
   def cbKeeper: DefaultCallbackKeeper = _keeper
+  def nvgContext: NanoVgContext = _nvgContext
 
   override def init(): Boolean = Utils.logging() {
     GLFWErrorCallback.createPrint(Console.out).set
@@ -65,23 +70,28 @@ class Window(val fullscreen: Boolean) extends CoreUnit { // TODO: write correct 
     glfwSwapInterval(1)
     glfwShowWindow(_ptr)
 
-    _context = new Context(ptr)
-    _keeper.registerCallbacks(ptr)
+    GL.createCapabilities
 
-    _keeper.getChainWindowFocusCallback.add(new GLFWWindowFocusCallback() {
-      override def invoke(window: Long, focused: Boolean): Unit = changeFocusCbs.foreach(f => f(focused))
-    })
+    initLegui()
 
-    _systemEventProcessor.addDefaultCallbacks(_keeper)
-
-    // TODO: in fullscreen ?
-//    glfwSetInputMode(ptr, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
     true
   }
 
-  def addFocusCb(cb: (Boolean) => Unit): Unit = this.changeFocusCbs = this.changeFocusCbs :+ cb
+  private def initLegui(): Unit = {
+    _context = new Context(ptr)
+    _keeper.registerCallbacks(ptr)
+    _keeper.getChainWindowFocusCallback.add(new GLFWWindowFocusCallback() {
+      override def invoke(window: Long, focused: Boolean): Unit = _changeFocusCbs.foreach(f => f(focused))
+    })
+    _systemEventProcessor.addDefaultCallbacks(_keeper)
+    _nvgContext = NanoVgContext.create()
+  }
+
+  def addFocusCb(cb: (Boolean) => Unit): Unit = this._changeFocusCbs = this._changeFocusCbs :+ cb
 
   override def destroy(): Unit = Utils.logging() {
+    _nvgContext.destroy()
+
     glfwFreeCallbacks(_ptr)
     glfwDestroyWindow(_ptr)
 
@@ -100,8 +110,10 @@ class Window(val fullscreen: Boolean) extends CoreUnit { // TODO: write correct 
   override def update(dt: Double): Unit = {
     glfwPollEvents()
     glfwSwapBuffers(_ptr)
+    updateLegui()
+  }
 
-    // legui update needed
+  private def updateLegui(): Unit = {
     _framesForUpdate.foreach(_systemEventProcessor.processEvents(_, context))
     EventProcessor.getInstance.processEvents()
     _framesForUpdate.foreach(LayoutManager.getInstance.layout(_))

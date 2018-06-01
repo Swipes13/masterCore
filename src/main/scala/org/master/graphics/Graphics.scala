@@ -5,7 +5,7 @@ package org.master.graphics
   */
 
 import java.awt.image.BufferedImage
-import java.io.{File, IOException}
+import java.io.File
 
 import org.joml.{Vector3f, Vector4f}
 import org.lwjgl.opengl.{GL, GLUtil}
@@ -35,7 +35,6 @@ class Graphics extends CoreUnit {
 
   private var _textures = Array.empty[Texture2D]
   override def init(): Boolean = core.Utils.logging() {
-    GL.createCapabilities
     GLUtil.setupDebugMessageCallback
     import org.lwjgl.glfw.GLFWErrorCallback
 //    glViewport(0, 0, Window.size.width * 2, Window.size.height * 2)
@@ -60,6 +59,7 @@ class Graphics extends CoreUnit {
     _mainFrameBuffer = new FrameBuffer(0, Window.context.getWindowSize.x * 2, Window.context.getWindowSize.y * 2)
       .setFlags(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
       .setColor(new Vector4f(1, 1, 1, 1))
+
     true
   }
 
@@ -121,19 +121,12 @@ class Graphics extends CoreUnit {
 
   override def update(dt: Double): Unit = {
     _testGui.frameBuffer().draw(myRender)
-    _mainFrameBuffer.draw(() => {
-      _testGui.update(dt)
-    })
-//    _mainFrameBuffer.draw(() => myRender)
+    _mainFrameBuffer.draw(_testGui.update)
   }
 
   private def myRender(): Unit = {
     glEnable(GL_DEPTH_TEST)
-//    glEnable(GL_STENCIL_TEST)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-//    glEnable(GL_CULL_FACE)
-//    glCullFace(GL_BACK)
-//
 
     _shaderPrograms.foreach { p => p.use()
       _projMatrix.set()
@@ -143,26 +136,12 @@ class Graphics extends CoreUnit {
       p.render()
     }
 
-//    val aspect = Window.size.width.toFloat / Window.size.height.toFloat
-//    glMatrixMode(GL_PROJECTION);
-//    glLoadIdentity();
-//    glOrtho(-1.0f * aspect, +1.0f * aspect, -1.0f, +1.0f, -1.0f, +1.0f);
-//
-//    /* Rotate a bit and draw a quad */
-//    glMatrixMode(GL_MODELVIEW);
-//    glRotatef(1 /** elapsed*/, 0, 0, 1);
-//    glBegin(GL_QUADS);
-//    glVertex2f(-0.5f, -0.5f);
-//    glVertex2f(+0.5f, -0.5f);
-//    glVertex2f(+0.5f, +0.5f);
-//    glVertex2f(-0.5f, +0.5f);
-//    glEnd();
   }
   def nvgRender(): Unit = {
     import org.lwjgl.nanovg.NVGColor
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    nvgBeginFrame(_testGui.nvgContext, _testGui.frameBuffer().width, _testGui.frameBuffer().height, 1)
+    nvgBeginFrame(Window.nvgContext.id, _testGui.frameBuffer().width, _testGui.frameBuffer().height, 1)
 
     val nvgColorOne: NVGColor = NVGColor.calloc
     val nvgColorTwo: NVGColor = NVGColor.calloc
@@ -177,23 +156,23 @@ class Graphics extends CoreUnit {
     nvgColorTwo.b(0)
     nvgColorTwo.a(1)
 
-    nvgTranslate(_testGui.nvgContext, _testGui.frameBuffer().width / 2f, _testGui.frameBuffer().height / 2f)
-    nvgRotate(_testGui.nvgContext, 5)
+    nvgTranslate(Window.nvgContext.id, _testGui.frameBuffer().width / 2f, _testGui.frameBuffer().height / 2f)
+    nvgRotate(Window.nvgContext.id, 5)
 
-    nvgBeginPath(_testGui.nvgContext)
-    nvgRect(_testGui.nvgContext, -_testGui.frameBuffer().width / 4f, -_testGui.frameBuffer().height / 4f, _testGui.frameBuffer().width / 2f, _testGui.frameBuffer().height / 2f)
-    nvgStrokeColor(_testGui.nvgContext, nvgColorTwo)
-    nvgStroke(_testGui.nvgContext)
+    nvgBeginPath(Window.nvgContext.id)
+    nvgRect(Window.nvgContext.id, -_testGui.frameBuffer().width / 4f, -_testGui.frameBuffer().height / 4f, _testGui.frameBuffer().width / 2f, _testGui.frameBuffer().height / 2f)
+    nvgStrokeColor(Window.nvgContext.id, nvgColorTwo)
+    nvgStroke(Window.nvgContext.id)
 
-    nvgBeginPath(_testGui.nvgContext)
-    nvgRect(_testGui.nvgContext, -_testGui.frameBuffer().width / 4f, -_testGui.frameBuffer().height / 4f, _testGui.frameBuffer().width / 2f, _testGui.frameBuffer().height / 2f)
-    nvgFillColor(_testGui.nvgContext, nvgColorOne)
-    nvgFill(_testGui.nvgContext)
+    nvgBeginPath(Window.nvgContext.id)
+    nvgRect(Window.nvgContext.id, -_testGui.frameBuffer().width / 4f, -_testGui.frameBuffer().height / 4f, _testGui.frameBuffer().width / 2f, _testGui.frameBuffer().height / 2f)
+    nvgFillColor(Window.nvgContext.id, nvgColorOne)
+    nvgFill(Window.nvgContext.id)
 
     nvgColorOne.free()
     nvgColorTwo.free()
 
-    nvgEndFrame(_testGui.nvgContext)
+    nvgEndFrame(Window.nvgContext.id)
   }
 
   def saveRtToFile(fileName: String): Boolean = {
@@ -209,8 +188,8 @@ class Graphics extends CoreUnit {
     val format = "PNG"
     val image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
 
-    for(x <- 0 until width) {
-      for(y <- 0 until height) {
+    for (x <- 0 until width) {
+      for (y <- 0 until height) {
         val i = (x + (width * y)) * bpp
         val r = buffer.get(i) & 0xFF
         val g = buffer.get(i + 1) & 0xFF

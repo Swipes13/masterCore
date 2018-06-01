@@ -1,7 +1,5 @@
 package org.master.graphics.ui
 
-import org.lwjgl.opengl.GL11._
-import org.lwjgl.opengl.GL30._
 import org.liquidengine.legui.component.misc.listener.component.TooltipCursorEnterListener
 import org.liquidengine.legui.style.border.SimpleLineBorder
 import org.liquidengine.legui.style.color.ColorConstants
@@ -10,14 +8,11 @@ import org.liquidengine.legui.component.RadioButtonGroup
 import org.liquidengine.legui.event.CursorEnterEvent
 import org.liquidengine.legui.event.MouseClickEvent
 import org.liquidengine.legui.listener.MouseClickEventListener
-import org.liquidengine.legui.system.handler.processor.SystemEventProcessor
 import org.liquidengine.legui.system.renderer.nvg.NvgRenderer
 import java.util
 import org.liquidengine.legui.component._
 import org.liquidengine.legui.style.Style.DisplayType
 import org.liquidengine.legui.style.Style.PositionType
-import org.lwjgl.nanovg.NanoVGGL2
-import org.lwjgl.nanovg.NanoVGGL3
 import org.liquidengine.legui.system.renderer.Renderer
 import org.master.core.Window
 import org.liquidengine.legui.image.FBOImage
@@ -28,55 +23,38 @@ class Gui {
   private val _testHeight = Window.size.height
   private val _frame = new Frame(_testWidth, _testHeight)
   private var _frameBuffer: FrameBuffer = _
-  private var _isVersionNew = false
-  private var _nvgContext = 0L
 
-  def nvgContext: Long = _nvgContext
   def frameBuffer(): FrameBuffer = _frameBuffer
 
   def init(): Unit = {
     Window.addFrameForUpdate(_frame)
     createGuiElements(_frame)
     _renderer.initialize()
-    _isVersionNew = (glGetInteger(GL_MAJOR_VERSION) > 3) || ((glGetInteger(GL_MAJOR_VERSION) == 3) && glGetInteger(GL_MINOR_VERSION) >= 2)
-    if (_isVersionNew) {
-      val flags = NanoVGGL3.NVG_STENCIL_STROKES | NanoVGGL3.NVG_ANTIALIAS
-      _nvgContext = NanoVGGL3.nvgCreate(flags)
-    }
-    else {
-      val flags = NanoVGGL2.NVG_STENCIL_STROKES | NanoVGGL2.NVG_ANTIALIAS
-      _nvgContext = NanoVGGL2.nvgCreate(flags)
-    }
-    if (_nvgContext != 0) {
-      _frameBuffer = FrameBuffer.create(1000, 1000)
-      val widget = new Widget(10, 10, 1000, 1000)
-      widget.setCloseable(false)
-      widget.setMinimizable(false)
-      widget.setResizable(true)
-      widget.getContainer.getStyle.setDisplay(DisplayType.FLEX)
 
-      val imageView = new ImageView(new FBOImage(_frameBuffer.texture.id, _frameBuffer.width, _frameBuffer.height))
-      imageView.setPosition(10, 10)
-      imageView.getStyle.setPosition(PositionType.RELATIVE)
-      imageView.getStyle.getFlexStyle.setFlexGrow(1)
-      imageView.getStyle.setMargin(10f)
-      imageView.getStyle.setMinimumSize(50, 50)
-      widget.getContainer.add(imageView)
-      _frame.getContainer.add(widget)
-    }
+    _frameBuffer = FrameBuffer.create(1000, 1000)
+    val widget = new Widget(10, 10, 1000, 1000)
+    widget.setCloseable(false)
+    widget.setMinimizable(false)
+    widget.setResizable(true)
+    widget.getContainer.getStyle.setDisplay(DisplayType.FLEX)
+
+    val imageView = new ImageView(new FBOImage(_frameBuffer.texture.id, _frameBuffer.width, _frameBuffer.height))
+    imageView.setPosition(10, 10)
+    imageView.getStyle.setPosition(PositionType.RELATIVE)
+    imageView.getStyle.getFlexStyle.setFlexGrow(1)
+    imageView.getStyle.setMargin(10f)
+    imageView.getStyle.setMinimumSize(50, 50)
+    widget.getContainer.add(imageView)
+    _frame.getContainer.add(widget)
   }
 
-  def update(dt: Double): Unit = {
-//    val windowSize = Window.context.getWindowSize
-//    glViewport(0, 0, windowSize.x * 2, windowSize.y * 2)
+  def update(): Unit = {
     _renderer.render(_frame, Window.context)
   }
 
   def destroy(): Unit = {
     _frameBuffer.destroy()
     _renderer.destroy()
-    if (_isVersionNew) NanoVGGL3.nnvgDelete(_nvgContext)
-    else NanoVGGL2.nnvgDelete(_nvgContext)
   }
 
   private def createGuiElements(frame: Frame): Unit = { // Set background color for frame
