@@ -29,6 +29,7 @@ class Window(val fullscreen: Boolean) extends CoreUnit { // TODO: write correct 
 
   private var _ptr = 0L
   private var _size = Size()
+  private var _innerSize = Size()
   private var _delta = 0.0
   private var _context: Context = _
   private val _keeper = new DefaultCallbackKeeper
@@ -36,6 +37,7 @@ class Window(val fullscreen: Boolean) extends CoreUnit { // TODO: write correct 
   private var _nvgContext: NanoVgContext = _
 
   def size: Size = _size
+  def innerSize: Size = _innerSize
   def ptr: Long = _ptr
   def context: Context = _context
   def cbKeeper: DefaultCallbackKeeper = _keeper
@@ -74,6 +76,8 @@ class Window(val fullscreen: Boolean) extends CoreUnit { // TODO: write correct 
 
     initLegui()
 
+    _innerSize = Size(_context.getWindowSize.x, _context.getWindowSize.y)
+
     true
   }
 
@@ -85,6 +89,7 @@ class Window(val fullscreen: Boolean) extends CoreUnit { // TODO: write correct 
     })
     _systemEventProcessor.addDefaultCallbacks(_keeper)
     _nvgContext = NanoVgContext.create()
+    Window.context.updateGlfwWindow()
   }
 
   def addFocusCb(cb: (Boolean) => Unit): Unit = this._changeFocusCbs = this._changeFocusCbs :+ cb

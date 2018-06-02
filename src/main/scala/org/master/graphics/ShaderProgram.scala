@@ -3,9 +3,15 @@ package org.master.graphics
 import org.lwjgl.opengl.GL20._
 import org.lwjgl.opengl.GL11._
 
+object ShaderProgramType extends Enumeration {
+  type ShaderProgramType = Value
+  val CookTorranceForward: ShaderProgramType.Value = Value(0)
+  val Simple: ShaderProgramType.Value = Value(1)
+}
+
 class ShaderProgram(val shaders: Array[Shader]) {
   val id: Int = glCreateProgram
-  var uniformLocs: Map[String, Int] = _
+  var uniformLocations: Map[String, Int] = _
   private var _vaos = Array.empty[Vao]
 
   def render(): Unit = _vaos.foreach(Vao.render)
@@ -13,8 +19,8 @@ class ShaderProgram(val shaders: Array[Shader]) {
   def validate(): Unit = ShaderProgram.check(glValidateProgram(id), id, GL_VALIDATE_STATUS, "validate shader error. ")
   def link(): Unit = ShaderProgram.check(glLinkProgram(id), id, GL_LINK_STATUS, "link shader error. ")
   def addVao(vao: Vao): Unit = _vaos = _vaos :+ vao
-  def prepareUniforms(uniforms: Array[String]): Unit = uniformLocs = uniforms.map(u => (u, glGetUniformLocation(id, u))).toMap[String, Int]
-  def updateLocForU(u: Uniform): Uniform = u.withLoc(this.uniformLocs.getOrElse(u.name, 0))
+  def prepareUniforms(uniforms: Array[String]): Unit = uniformLocations = uniforms.map(u => (u, glGetUniformLocation(id, u))).toMap[String, Int]
+  def updateLocationForUniform(u: Uniform): Uniform = u.withLocation(this.uniformLocations.getOrElse(u.name, 0))
 }
 
 object ShaderProgram {

@@ -6,6 +6,7 @@ package org.master.core
 
 import org.lwjgl
 import org.master.graphics.Graphics
+import org.master.input.Input
 
 class Core {
   def run(): Unit = Utils.logging(s"Master core run with version ${lwjgl.Version.getVersion}!") {
@@ -18,7 +19,7 @@ class Core {
 
 object Core {
   def apply() = new Core()
-  val units: Array[CoreUnit] = Array(Window, Graphics, Keys)
+  val units: Array[CoreUnit] = Array(Window, Graphics, Input)
   val runits: Array[CoreUnit] = units.reverse
   def main(args: Array[String]): Unit = Core().run()
 }

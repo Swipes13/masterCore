@@ -13,21 +13,12 @@ class FrameBuffer(val id: Int, val width: Int, val height: Int) {
 
   def bind(): FrameBuffer = { glBindFramebuffer(GL_FRAMEBUFFER, id); this }
   def draw(drawFunction: () => Unit): Unit = {
-    bind()
-    glViewport(0, 0, width, height)
-    Graphics.clearFrameBuffer(renderFlags, clearColor)
+    FrameBuffer.preRender(this)
     drawFunction()
     unbind()
   }
 
   def unbind(): Unit = glBindFramebuffer(GL_FRAMEBUFFER, 0)
-
-  def destroy(): Unit = {
-    glDeleteRenderbuffers(depthBuffer.id)
-    glDeleteTextures(texture.id)
-    glDeleteFramebuffers(id)
-  }
-
   def setColor(color: Vector4f): FrameBuffer = { clearColor = color; this }
   def setFlags(flags: Int): FrameBuffer = { renderFlags = flags; this }
 }
@@ -44,5 +35,16 @@ object FrameBuffer {
     glDrawBuffer(GL_COLOR_ATTACHMENT0)
     frameBuffer.unbind()
     frameBuffer
+  }
+  def preRender(fb: FrameBuffer): Unit = {
+    fb.bind()
+    glViewport(0, 0, fb.width, fb.height)
+    Graphics.clearFrameBuffer(fb.renderFlags, fb.clearColor)
+  }
+  def unbind(fb: FrameBuffer): Unit = glBindFramebuffer(GL_FRAMEBUFFER, 0)
+  def destroy(fb: FrameBuffer): Unit = {
+    glDeleteRenderbuffers(fb.depthBuffer.id)
+    glDeleteTextures(fb.texture.id)
+    glDeleteFramebuffers(fb.id)
   }
 }

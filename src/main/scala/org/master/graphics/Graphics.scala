@@ -7,7 +7,7 @@ package org.master.graphics
 import java.awt.image.BufferedImage
 import java.io.File
 
-import org.joml.{Vector3f, Vector4f}
+import org.joml.{Vector2f, Vector3f, Vector4f}
 import org.lwjgl.opengl.{GL, GLUtil}
 import org.master.core.{CoreUnit, Window}
 import org.master.core
@@ -20,24 +20,19 @@ import org.lwjgl.opengl.GL11
 import org.lwjgl.nanovg.NanoVG._
 import javax.imageio.ImageIO
 
+import scala.collection.mutable.ArrayBuffer
+
 class Graphics extends CoreUnit {
-  private var _shaderPrograms = Array.empty[ShaderProgram]
-  private var _projMatrix = new Matrix4fU().withName("projectionMatrix")
-  private val _camera = new Camera(); _camera.withName("viewMatrix")
-  private val _testRed = new Float1U(0.5f); _testRed.withName("red")
-  private val _testLight = new Float3U(0, 0, -1); _testLight.withName("lightDir")
-  private val _testView = new Float3U(0, 0, -1); _testView.withName("viewDir")
-  private var _mainFrameBuffer: FrameBuffer = _
-
-  private var _testGui: Gui = _
-
-  private val _scene = new Scene(); _scene.node = Node.create()
-
+  private var _shaderPrograms = Map.empty[ShaderProgramType.Value, ShaderProgram]
   private var _textures = Array.empty[Texture2D]
+  private var _mainFrameBuffer: FrameBuffer = _
+  private var _lights = ArrayBuffer.empty[Light]
+  private var _rtRenderFuncs = ArrayBuffer.empty[(RTContext, (Double, RTContext) => Unit)]
+
+  private var _gui: Gui = _
+
   override def init(): Boolean = core.Utils.logging() {
     GLUtil.setupDebugMessageCallback
-    import org.lwjgl.glfw.GLFWErrorCallback
-//    glViewport(0, 0, Window.size.width * 2, Window.size.height * 2)
 //    glShadeModel(GL_SMOOTH)
     glClearDepth(1.0f)
     glEnable(GL_DEPTH_TEST)
@@ -47,40 +42,34 @@ class Graphics extends CoreUnit {
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-    prepareShaders()
+    prepareShaderPrograms()
     addTextures()
-    initTestScene()
 
-    _testGui = new Gui()
-    _testGui.init()
+    _gui = new Gui().init()
 
-    Window.context.updateGlfwWindow()
-
-    _mainFrameBuffer = new FrameBuffer(0, Window.context.getWindowSize.x * 2, Window.context.getWindowSize.y * 2)
+    _mainFrameBuffer = new FrameBuffer(0, Window.innerSize.width * 2, Window.innerSize.height * 2)
       .setFlags(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
       .setColor(new Vector4f(1, 1, 1, 1))
+
+    _shaderPrograms.foreach(s => initGuiRts(s._2))
+
+    //    QuasarClient.init()
 
     true
   }
 
-  def initTestScene(): Unit = {
-//    l.node = Node.create()
-//    l.node.addComponent(l)
-//    l.string = "test"
-    _scene.node.addComponent(_scene)
-//    _scene.node.addChild(l.node)
-
-  }
-
-  def prepareShaders(): Unit = {
-    val b = scala.collection.mutable.ListBuffer.empty[ShaderProgram]
-    val colorSp = ShaderProgram.create(Array(
+  def prepareShaderPrograms(): Unit = {
+    val cookTorranceForward = ShaderProgram.create(Array(
        Shader.create("shaders/v_cookTorrance.glsl", ShaderType.Vertex),
        Shader.create("shaders/f_cookTorrance.glsl", ShaderType.Fragment)
     ))
-    addVaosToProgram(colorSp)
-    b += colorSp
-    _shaderPrograms = b.toArray
+
+    val mesh = Mesh.fromFile("mesh/test2.mesh")
+    mesh.vao.foreach { case (physicalIndex, vao) =>
+      if (physicalIndex == 1) cookTorranceForward.addVao(vao)
+    }
+
+    _shaderPrograms += ShaderProgramType.CookTorranceForward -> cookTorranceForward
   }
 
   def addTextures(): Unit = {
@@ -89,96 +78,62 @@ class Graphics extends CoreUnit {
     _textures = b.toArray
   }
 
-  def addVaosToProgram(program: ShaderProgram): Unit = {
-    val lineP = (Array(-1f, -1, 0,  1, -1, 1), 2)
-    val lineC = (Array(1f, 1, 0, 0, 0, 1, 0, 1, 1), 3)
-//    program.addVao(Vao.create(DrawType.LineLoop, 3, Array(lineP, lineC)))
-    _projMatrix = Matrix4fU.perspective(60, 0.01f, 100).withName("projectionMatrix")
-
-    program.updateLocForU(this._projMatrix)
-    program.updateLocForU(this._camera)
-    program.updateLocForU(this._testRed)
-    program.updateLocForU(this._testView)
-    program.updateLocForU(this._testLight)
-
-    program.uniformLocs.foreach(println)
-
-    val vertexes = Array(
-      new Vertex(VertexElement(-1, -1), VertexElement(0, 0, 1), VertexElement(0, 0)),
-      new Vertex(VertexElement(1, -1),  VertexElement(0, 0, 1), VertexElement(1, 0)),
-      new Vertex(VertexElement(0, 1),   VertexElement(0, 0, 1), VertexElement(0, 1)),
-      new Vertex(VertexElement(1, 1),   VertexElement(0, 0, 1), VertexElement(1, 1))
+  def initGuiRts(program: ShaderProgram): Unit = {
+    val uniforms = Array(
+      (_lights += new Light(new Vector3f(0, 0, -1))).last.withName("lightDir")
     )
-//    program.addVao(Vao.createInterleaved(DrawType.Triangles, vertexes, Array[Int](0, 1, 2, 2, 1, 3)))
-//    QuasarClient.init()
-    val mesh = Mesh.fromFile("mesh/test2.mesh")
-    mesh.vao.foreach { case (physicalIndex, vao) =>
-      if (physicalIndex == 1) program.addVao(vao)
-    }
 
-    mesh.nodes
+    val cameras = Array(
+      new Camera("viewMatrix").withPosition(new Vector3f(0, 0, -1)),
+      new Camera("viewMatrix").withPosition(new Vector3f(0, 0, -2)),
+      new Camera("viewMatrix").withPosition(new Vector3f(0, 0, -3)),
+      new Camera("viewMatrix").withPosition(new Vector3f(0, 0, -4))
+    )
+
+    val (near, far) = (0.01f, 100)
+    _gui.rtContexts.zipWithIndex.foreach { case(context, i) =>
+      val perspective = i == 3
+      val pm = if (perspective) Matrix4fU.perspective(context.size.x, context.size.y, 60, 0.01f, 100)
+      else new OrthoProjectionMatrix(new Vector2f(context.size.x, context.size.y), near, far, 0.05f)
+
+      pm.withName("projectionMatrix")
+      context.setCamera(cameras(i))
+      context.setProjectionMatrix(pm)
+      uniforms.foreach(context.addUniform)
+      _rtRenderFuncs += (context, (delta, context) => {
+        if (perspective) { // perspective
+          val p = _shaderPrograms(ShaderProgramType.CookTorranceForward).use()
+          context.updateShaderProgramLocations(p)
+          // my code sets to shaders
+          p.render() // render all vaos ? correctly or not?
+        } else {
+          val p = _shaderPrograms(ShaderProgramType.CookTorranceForward).use()
+          context.updateShaderProgramLocations(p)
+          p.render()
+        }
+      })
+    }
   }
 
   override def update(dt: Double): Unit = {
-    _testGui.frameBuffer().draw(myRender)
-    _mainFrameBuffer.draw(_testGui.update)
-  }
-
-  private def myRender(): Unit = {
+    _rtRenderFuncs.foreach { case (context, renderFunction) =>
+      context.render(dt, renderFunction)
+    }
     glEnable(GL_DEPTH_TEST)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+//    _shaderPrograms.foreach { p => p.use()
+//      //      _testLight.update(_camera.look.negate(new Vector3f())).set()
+//      //      _testView.update(_camera.look.negate(new Vector3f())).set()
+//
+//    }
 
-    _shaderPrograms.foreach { p => p.use()
-      _projMatrix.set()
-      //      _testLight.update(_camera.look.negate(new Vector3f())).set()
-      _testView.update(_camera.look.negate(new Vector3f())).set()
-      _camera.updateWithRender()
-      p.render()
-    }
-
-  }
-  def nvgRender(): Unit = {
-    import org.lwjgl.nanovg.NVGColor
-    glEnable(GL_BLEND)
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    nvgBeginFrame(Window.nvgContext.id, _testGui.frameBuffer().width, _testGui.frameBuffer().height, 1)
-
-    val nvgColorOne: NVGColor = NVGColor.calloc
-    val nvgColorTwo: NVGColor = NVGColor.calloc
-
-    nvgColorOne.r(0)
-    nvgColorOne.g(1)
-    nvgColorOne.b(0)
-    nvgColorOne.a(1)
-
-    nvgColorTwo.r(0)
-    nvgColorTwo.g(0)
-    nvgColorTwo.b(0)
-    nvgColorTwo.a(1)
-
-    nvgTranslate(Window.nvgContext.id, _testGui.frameBuffer().width / 2f, _testGui.frameBuffer().height / 2f)
-    nvgRotate(Window.nvgContext.id, 5)
-
-    nvgBeginPath(Window.nvgContext.id)
-    nvgRect(Window.nvgContext.id, -_testGui.frameBuffer().width / 4f, -_testGui.frameBuffer().height / 4f, _testGui.frameBuffer().width / 2f, _testGui.frameBuffer().height / 2f)
-    nvgStrokeColor(Window.nvgContext.id, nvgColorTwo)
-    nvgStroke(Window.nvgContext.id)
-
-    nvgBeginPath(Window.nvgContext.id)
-    nvgRect(Window.nvgContext.id, -_testGui.frameBuffer().width / 4f, -_testGui.frameBuffer().height / 4f, _testGui.frameBuffer().width / 2f, _testGui.frameBuffer().height / 2f)
-    nvgFillColor(Window.nvgContext.id, nvgColorOne)
-    nvgFill(Window.nvgContext.id)
-
-    nvgColorOne.free()
-    nvgColorTwo.free()
-
-    nvgEndFrame(Window.nvgContext.id)
+    _mainFrameBuffer.draw(_gui.update)
   }
 
   def saveRtToFile(fileName: String): Boolean = {
     GL11.glReadBuffer(GL11.GL_FRONT)
-    val width = Window.size.width
-    val height = Window.size.height
+    val width = Window.innerSize.width
+    val height = Window.innerSize.height
     val bpp = 4
     // Assuming a 32-bit display with a byte each for red, green, blue, and alpha.
     val buffer = BufferUtils.createByteBuffer(width * height * bpp)
@@ -203,8 +158,8 @@ class Graphics extends CoreUnit {
 
   override def destroy(): Unit = {
     ShaderProgram.clear()
-    _shaderPrograms.foreach(ShaderProgram.clear)
-    _testGui.destroy()
+    _shaderPrograms.foreach(s => ShaderProgram.clear(s._2))
+    _gui.destroy()
   }
 
 }
