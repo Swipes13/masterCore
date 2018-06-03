@@ -13,4 +13,13 @@ object Utils {
     println(if (endLogMessage.isEmpty) s"${st.getClassName}.${st.getMethodName} finish" else endLogMessage)
     res
   }
+  def arrayToStrWithDelim[T](array: Array[T], delim: Char, toStringFunc: (T) => String = null): String = {
+    if (toStringFunc == null) {
+      array.tail.foldLeft(s"${array.head}") { case (prev, next) => prev + s"$delim$next" }
+    } else {
+      array.tail.foldLeft(s"${toStringFunc(array.head)}") { case (prev, next) =>
+        prev + s"$delim${toStringFunc(next)}"
+      }
+    }
+  }
 }

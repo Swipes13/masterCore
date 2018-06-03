@@ -20,7 +20,7 @@ class Vbo(val bufferType: BufferType.Value) {
 }
 
 object Vbo {
-  def create(bufferType: BufferType.Value, values: Array[Float]): Vbo = new Vbo(bufferType).bind().prepareData(prepareBuffer(values))
+  def create(bufferType: BufferType.Value, values: Seq[Float]): Vbo = new Vbo(bufferType).bind().prepareData(prepareBuffer(values.toArray))
   def create(ibuffer: IntBuffer): Vbo = new Vbo(BufferType.Index).bind().prepareData(ibuffer)
 
   def prepareBuffer(v: Array[Int]): IntBuffer = {

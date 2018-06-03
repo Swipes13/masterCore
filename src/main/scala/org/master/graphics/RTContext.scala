@@ -5,8 +5,6 @@ import org.master.input.{Input, KeyType, MousePos}
 
 import scala.collection.mutable.ArrayBuffer
 
-
-
 class RTContext(val size: Vector2i) {
   var hasFocus = false
 

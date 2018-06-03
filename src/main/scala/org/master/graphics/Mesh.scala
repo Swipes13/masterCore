@@ -6,22 +6,22 @@ import scala.io.Source
 import scala.collection.immutable.Map
 import scala.collection.mutable.ArrayBuffer
 
-class Mesh {
+class Mesh(val fileName: String) {
   var format = MeshFormat()
   var physicalNames = Map.empty[Int, PhysicalName]
   var nodes = List.empty[MeshNode]
   var elements = List.empty[MeshElement]
 
-  var vao = Map.empty[Int, Vao]
+  var vaos = Map.empty[Int, Vao]
 
-  def initVaos(): Unit = {
+  def initVaos(withSaveToVaoFile: Boolean): Unit = {
     val vertexesWithIndex = nodes.map(node => (node.index, new VertexElement(node.x, node.y, node.z))).toMap
     physicalNames.foreach { case (physicalIndex, _) =>
-      if (physicalIndex == 1) vao += (physicalIndex -> createVaoForPhysicalName(physicalIndex, vertexesWithIndex))
+      if (physicalIndex == 1) vaos += (physicalIndex -> createVaoForPhysicalName(physicalIndex, vertexesWithIndex, withSaveToVaoFile))
     }
   }
 
-  def createVaoForPhysicalName(physicalIndex: Int, vertexesWithIndex: Map[Long, VertexElement]): Vao = {
+  def createVaoForPhysicalName(physicalIndex: Int, vertexesWithIndex: Map[Long, VertexElement], withSaveToVaoFile: Boolean): Vao = {
     val indexesWithCheck = elements.flatMap { element =>
       MeshElementType.fromInt(element.`type`) match {
         case Some(t) if element.tags.head != physicalIndex => Array.empty[Int]
@@ -46,7 +46,6 @@ class Mesh {
 
     for (i <- vertexes.indices) {
       for (j <- Range(vertexes.length - 1, i, -1)) {
-//        println(i, j)
         if (vertexes(i)._1 == vertexes(j)._1) {
           val toDrop = vertexes(j)._2
           vertexes = vertexes.take(j) ++ vertexes.drop(j + 1)
@@ -57,12 +56,16 @@ class Mesh {
     }
     for (i <- vertexes.indices) indexes = indexes.map(ind => if (!ind._2 && ind._1 == vertexes(i)._2) (i, true) else ind)
 
-    Vao.createInterleaved(DrawType.Triangles, vertexes.map(_._1), indexes.map(_._1))
+    val v = vertexes.map(_._1)
+    val i = indexes.map(_._1)
+
+    if (withSaveToVaoFile) Vao.saveToFile(s"${fileName}_${physicalNames(physicalIndex).name}", v, i)
+    Vao.createInterleaved(DrawType.Triangles, v, i)
   }
 }
 
 object Mesh {
-  def fromFile(fileName: String): Mesh = {
+  def fromFile(fileName: String, withSaveToVaoFile: Boolean = false): Mesh = {
     val linesFromFile = Source.fromFile(fileName).getLines().toList
 
     var indexes = scala.collection.mutable.ArrayBuffer.empty[Int]
@@ -70,12 +73,11 @@ object Mesh {
       case (line, id) if ReservedGmshType.all.exists(t => line.contains(t)) => indexes += id
       case _ =>
     }
-
-    val mesh = new Mesh()
+    val mesh = new Mesh(fileName.split('/').last.split('.').head)
     indexes.toList.sliding(2, 2).toList.foreach { blockIndexes =>
       val (start, end) = blockIndexes.head -> blockIndexes(1)
-      val FullBlock = linesFromFile.slice(start, end)
-      val (head, block) = FullBlock.head -> FullBlock.tail
+      val fullBlock = linesFromFile.slice(start, end)
+      val (head, block) = fullBlock.head -> fullBlock.tail
 
       ReservedGmshType.all.find(t => head.contains(t)) match {
         case Some(t) => ReservedGmshType.withName(t) match {
@@ -88,7 +90,7 @@ object Mesh {
         case _ =>
       }
     }
-    mesh.initVaos()
+    mesh.initVaos(withSaveToVaoFile)
     mesh
   }
 }

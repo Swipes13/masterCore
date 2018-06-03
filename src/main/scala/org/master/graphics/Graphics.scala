@@ -64,10 +64,12 @@ class Graphics extends CoreUnit {
        Shader.create("shaders/f_cookTorrance.glsl", ShaderType.Fragment)
     ))
 
-    val mesh = Mesh.fromFile("mesh/test2.mesh")
-    mesh.vao.foreach { case (physicalIndex, vao) =>
-      if (physicalIndex == 1) cookTorranceForward.addVao(vao)
-    }
+//    val mesh = Mesh.fromFile("mesh/test2.mesh")
+//    mesh.vaos.foreach { case (physicalIndex, vao) =>
+//      if (physicalIndex == 1) cookTorranceForward.addVao(vao)
+//    }
+
+    cookTorranceForward.addVao(Vao.fromFile("vaos/3_steel.vao"))
 
     _shaderPrograms += ShaderProgramType.CookTorranceForward -> cookTorranceForward
   }
