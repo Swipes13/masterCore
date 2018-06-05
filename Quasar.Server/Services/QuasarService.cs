@@ -24,13 +24,14 @@ namespace Quasar.Server.Services {
     public class QuasarService {
         public Quasar.UI.Project.Project Project { get; set; }
         public Quasar.UI.Project.ISolutionView Solution { get; set; }
+        public Boolean inited = false;
 
         public async Task Load(LoadOptions options) {
             Console.WriteLine("load!");
             var lp = new LoadOptions("../quasar/Panda.quasar", "../quasar/panda-BemProblem.sol");
-            // service.Load();
             Project = await Quasar.UI.Project.Project.LoadAsync("test", File.OpenRead(lp.ProjectPath));
             var problem = Project.Items.OfType<Quasar.UI.Project.ProblemView>().First();
+            inited = true;
             Solution = await problem.LoadSolution(lp.SolPath);
         }
 

@@ -37,7 +37,7 @@ namespace Quasar.Server.Controllers {
 
         [HttpPost("load")]
         public async Task<ActionResult> Load(LoadOptions options) {
-            await service.Load(options);
+            if (!service.inited) await service.Load(options);
             return Ok();
         }
     }

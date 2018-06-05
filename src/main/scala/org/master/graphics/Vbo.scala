@@ -12,16 +12,32 @@ object BufferType extends Enumeration {
   val Index: BufferType.Value = Value(GL_ELEMENT_ARRAY_BUFFER)
 }
 
-class Vbo(val bufferType: BufferType.Value) {
+object BufferDrawType extends Enumeration {
+  type BufferDrawType = Value
+  val None = 0
+  val Static: BufferDrawType.Value = Value(GL_STATIC_DRAW)
+  val Dynamic: BufferDrawType.Value = Value(GL_DYNAMIC_DRAW)
+}
+
+class Vbo(val bufferType: BufferType.Value, drawType: BufferDrawType.Value) {
   val id: Int = glGenBuffers
   def bind(): Vbo = { glBindBuffer(bufferType.id, id); this }
-  def prepareData(buffer: IntBuffer): Vbo = { glBufferData(bufferType.id, buffer, GL_STATIC_DRAW); this }
-  def prepareData(buffer: FloatBuffer): Vbo = { glBufferData(bufferType.id, buffer, GL_STATIC_DRAW); this }
+  def prepareData(buffer: IntBuffer): Vbo = { glBufferData(bufferType.id, buffer, drawType.id); this }
+  def prepareData(buffer: FloatBuffer): Vbo = { glBufferData(bufferType.id, buffer, drawType.id); this }
+  def unbind(): Unit = glBindBuffer(bufferType.id, 0)
+  def setBuffer(buffer: FloatBuffer): Vbo = { glBufferSubData(GL_ARRAY_BUFFER, 0, buffer); this }
+
+  def updateData(buffer: FloatBuffer): Unit = bind().setBuffer(buffer).unbind()
 }
 
 object Vbo {
-  def create(bufferType: BufferType.Value, values: Seq[Float]): Vbo = new Vbo(bufferType).bind().prepareData(prepareBuffer(values.toArray))
-  def create(ibuffer: IntBuffer): Vbo = new Vbo(BufferType.Index).bind().prepareData(ibuffer)
+  def create(bufferType: BufferType.Value, drawType: BufferDrawType.Value, buffer: FloatBuffer): Vbo =
+    new Vbo(bufferType, drawType).bind().prepareData(buffer)
+
+  def create(bufferType: BufferType.Value, drawType: BufferDrawType.Value, values: Seq[Float]): Vbo =
+    create(bufferType, drawType, prepareBuffer(values.toArray))
+
+  def create(ibuffer: IntBuffer): Vbo = new Vbo(BufferType.Index, BufferDrawType.Static).bind().prepareData(ibuffer)
 
   def prepareBuffer(v: Array[Int]): IntBuffer = {
     val buffer = BufferUtils.createIntBuffer(v.length)
@@ -29,6 +45,12 @@ object Vbo {
     buffer
   }
   def prepareBuffer(v: Array[Float]): FloatBuffer = {
+    val buffer = BufferUtils.createFloatBuffer(v.length)
+    buffer.put(v).flip()
+    buffer
+  }
+  def prepareBuffer(a: Array[Vertex]): FloatBuffer = {
+    val v = a.flatMap(vs => vs.elems.flatMap(v => v.values))
     val buffer = BufferUtils.createFloatBuffer(v.length)
     buffer.put(v).flip()
     buffer

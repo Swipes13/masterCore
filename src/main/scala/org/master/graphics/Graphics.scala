@@ -8,16 +8,14 @@ import java.awt.image.BufferedImage
 import java.io.File
 
 import org.joml.{Vector2f, Vector3f, Vector4f}
-import org.lwjgl.opengl.{GL, GLUtil}
+import org.lwjgl.opengl.GLUtil
 import org.master.core.{CoreUnit, Window}
 import org.master.core
-import org.master.graphics.scene.{Node, Scene}
 import org.master.graphics.ui.Gui
 import org.master.http_client.QuasarClient
 import org.lwjgl.opengl.GL11._
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
-import org.lwjgl.nanovg.NanoVG._
 import javax.imageio.ImageIO
 
 import scala.collection.mutable.ArrayBuffer
@@ -25,11 +23,13 @@ import scala.collection.mutable.ArrayBuffer
 class Graphics extends CoreUnit {
   private var _shaderPrograms = Map.empty[ShaderProgramType.Value, ShaderProgram]
   private var _textures = Array.empty[Texture2D]
+  private var _cubeMaps = Array.empty[CubeMap]
   private var _mainFrameBuffer: FrameBuffer = _
   private var _lights = ArrayBuffer.empty[Light]
   private var _rtRenderFuncs = ArrayBuffer.empty[(RTContext, (Double, RTContext) => Unit)]
-
   private var _gui: Gui = _
+
+  def shaderPrograms: Map[ShaderProgramType.Value, ShaderProgram] = _shaderPrograms
 
   override def init(): Boolean = core.Utils.logging() {
     GLUtil.setupDebugMessageCallback
@@ -53,7 +53,7 @@ class Graphics extends CoreUnit {
 
     _shaderPrograms.foreach(s => initGuiRts(s._2))
 
-    //    QuasarClient.init()
+    QuasarClient.init()
 
     true
   }
@@ -64,7 +64,7 @@ class Graphics extends CoreUnit {
        Shader.create("shaders/f_cookTorrance.glsl", ShaderType.Fragment)
     ))
 
-//    val mesh = Mesh.fromFile("mesh/test2.mesh")
+//    val mesh = Mesh.fromFile("mesh/3.mesh", true)
 //    mesh.vaos.foreach { case (physicalIndex, vao) =>
 //      if (physicalIndex == 1) cookTorranceForward.addVao(vao)
 //    }
@@ -72,12 +72,24 @@ class Graphics extends CoreUnit {
     cookTorranceForward.addVao(Vao.fromFile("vaos/3_steel.vao"))
 
     _shaderPrograms += ShaderProgramType.CookTorranceForward -> cookTorranceForward
+
+    _shaderPrograms += ShaderProgramType.QuasarResult -> ShaderProgram.create(Array(
+      Shader.create("shaders/v_quasarResult.glsl", ShaderType.Vertex),
+      Shader.create("shaders/g_quasarResult.glsl", ShaderType.Geometry),
+      Shader.create("shaders/f_quasarResult.glsl", ShaderType.Fragment)
+    ))
   }
 
   def addTextures(): Unit = {
     val b = scala.collection.mutable.ListBuffer.empty[Texture2D]
-    b += Texture2D.create("textures/Star.png", TextureLocation._1)
+//    b += Texture2D.create("textures/Star.png", TextureLocation._1)
+    b += Texture2D.create("textures/steel.png", TextureLocation._1)
     _textures = b.toArray
+    _cubeMaps = Array(CubeMap.create(
+//      Seq("rt", "lf", "up", "dn", "bk", "ft").map(t => s"textures/sor_cwd/cwd_$t.png")
+//        Seq("up", "up", "up", "up", "up", "up").map(t => s"textures/sor_cwd/cwd_$t.png")
+      Range(0, 6).map(_ => "textures/sor_cwd/steel.png")
+    ))
   }
 
   def initGuiRts(program: ShaderProgram): Unit = {
@@ -86,35 +98,56 @@ class Graphics extends CoreUnit {
     )
 
     val cameras = Array(
-      new Camera("viewMatrix").withPosition(new Vector3f(0, 0, -1)),
-      new Camera("viewMatrix").withPosition(new Vector3f(0, 0, -2)),
-      new Camera("viewMatrix").withPosition(new Vector3f(0, 0, -3)),
-      new Camera("viewMatrix").withPosition(new Vector3f(0, 0, -4))
+      new Camera("viewMatrix").frontView(),
+      new Camera("viewMatrix").topView(),
+      new Camera("viewMatrix").rightView(),
+      new Camera("viewMatrix").withSettings(
+        p = new Vector3f(0, 2, 0),
+        l = new Vector3f(0, 1, 0),
+        r = new Vector3f(1, 0, 0),
+        u = new Vector3f(0, 0, 1)
+      )
     )
 
     val (near, far) = (0.01f, 100)
     _gui.rtContexts.zipWithIndex.foreach { case(context, i) =>
       val perspective = i == 3
       val pm = if (perspective) Matrix4fU.perspective(context.size.x, context.size.y, 60, 0.01f, 100)
-      else new OrthoProjectionMatrix(new Vector2f(context.size.x, context.size.y), near, far, 0.05f)
+      else new OrthoProjectionMatrix(context.size.x, context.size.y, near, far, 0.01f)
 
       pm.withName("projectionMatrix")
       context.setCamera(cameras(i))
       context.setProjectionMatrix(pm)
       uniforms.foreach(context.addUniform)
       _rtRenderFuncs += (context, (delta, context) => {
+        _textures.foreach(Texture2D.bind)
         if (perspective) { // perspective
-          val p = _shaderPrograms(ShaderProgramType.CookTorranceForward).use()
-          context.updateShaderProgramLocations(p)
-          // my code sets to shaders
-          p.render() // render all vaos ? correctly or not?
+          _cubeMaps.foreach(CubeMap.bind)
+          commonRender(delta, context)
+          renderQuasarResults(delta, context)
         } else {
-          val p = _shaderPrograms(ShaderProgramType.CookTorranceForward).use()
-          context.updateShaderProgramLocations(p)
-          p.render()
+          CubeMap.unbind()
+          glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+          commonRender(delta, context)
+          glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+          renderQuasarResults(delta, context)
         }
       })
     }
+  }
+
+  def commonRender(delta: Double, context: RTContext): Unit = {
+    val p = _shaderPrograms(ShaderProgramType.CookTorranceForward).use()
+    context.updateShaderProgramLocations(p)
+    // my code update to shaders
+    ShaderProgram.render(p) // render all vaos ? correctly or not?
+  }
+
+  def renderQuasarResults(delta: Double, context: RTContext): Unit = {
+    QuasarClient.resultView.update(delta)
+    val p = _shaderPrograms(ShaderProgramType.QuasarResult).use()
+    context.updateShaderProgramLocations(p)
+    ShaderProgram.render(p)
   }
 
   override def update(dt: Double): Unit = {

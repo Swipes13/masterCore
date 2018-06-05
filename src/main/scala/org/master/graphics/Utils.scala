@@ -22,5 +22,4 @@ object Utils {
     in.close()
     BufferWithSize(buf, Size(tWidth, tHeight))
   }
-
 }

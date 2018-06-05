@@ -14,7 +14,9 @@ import org.liquidengine.legui.style.Style.PositionType
 import org.liquidengine.legui.system.renderer.Renderer
 import org.master.core.Window
 import org.liquidengine.legui.image.FBOImage
+import org.liquidengine.legui.style.Style
 import org.liquidengine.legui.style.color.ColorConstants
+import org.master.http_client.{QuasarClient, QuasarResultType}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -24,6 +26,7 @@ class Gui {
   private val _testHeight = Window.innerSize.height
   private val _frame = new Frame(_testWidth, _testHeight)
   private var _rightPanel: Panel = _
+  private var _quasarPanel: QuasarInputPanel = _
 
 
   var rtContexts: ArrayBuffer[RTContext] = ArrayBuffer.empty[RTContext]
@@ -42,19 +45,6 @@ class Gui {
     _renderer.destroy()
   }
 
-  def addSelectBox(elements: Array[String]): Unit = {
-    val selectBox: SelectBox = new SelectBox(5, 5, _rightPanel.getSize.x - 10, 20)
-    elements.foreach(selectBox.addElement)
-    selectBox.setVisibleCount(Math.min(elements.length, 5))
-    selectBox.setElementHeight(20)
-    selectBox.addSelectBoxChangeSelectionEventListener(new SelectBoxChangeSelectionEventListener {
-      override def process(event: SelectBoxChangeSelectionEvent[_ <: SelectBox]): Unit = {
-        println(event)
-      }
-    })
-    _rightPanel.add(selectBox)
-  }
-
   private def createMainGui(): Unit = {
     val rpBorderWidth = 2
     val rpWidth = 400
@@ -62,6 +52,7 @@ class Gui {
     _rightPanel = new Panel(Window.innerSize.width - rpWidth + rpBorderWidth * 2, 0, rpWidth - 4 * rpBorderWidth, rpHeight)
     _rightPanel.getStyle.getBackground.setColor(new Vector4f(237 / 255.0f, 237 / 255.0f, 237 / 255.0f, 1))
     _rightPanel.getStyle.setBorder(new SimpleLineBorder(new Vector4f(157 / 255.0f, 157 / 255.0f, 157 / 255.0f, 1), rpBorderWidth))
+
 
     _frame.getContainer.add(_rightPanel)
 
@@ -84,7 +75,14 @@ class Gui {
       _frame.getContainer.add(imageView)
       rtContexts += context
     }
-    addSelectBox(Array("hello", "world", "qwer", "plz", "check", "6 elements"))
+    _rightPanel.add(Gui.selectBoxWithName(_rightPanel.getSize.x, "Scalar or Vector:", Array("Scalar", "Vector"),
+      (s: String) => {
+        if (s == "Scalar") _quasarPanel.updateView(QuasarResultType.Scalar, QuasarClient.scalars)
+        else _quasarPanel.updateView(QuasarResultType.Vector, QuasarClient.vectors)
+      }
+    )._1)
+    _quasarPanel = new QuasarInputPanel(5, 50, rpWidth - 2 * rpBorderWidth - 10)
+    _rightPanel.add(_quasarPanel)
   }
 
   private def generateOnFly = {
@@ -140,5 +138,26 @@ class Gui {
 //    nvgColorTwo.free()
 //
 //    nvgEndFrame(Window.nvgContext.id)
+  }
+}
+
+object Gui {
+  def selectBoxWithName(width: Float, name: String, elements: Seq[String], selectCb: (String) => Unit, y: Float = 0): (Component, SelectBox) = {
+    val panel = new Panel(10, 5 + y, width - 20, 35)
+    val textWidth = 120
+    val sbName = new Label(10, 5 + y, textWidth, 20)
+    sbName.getTextState.setText(name)
+    panel.add(sbName)
+
+    val selectBox: SelectBox = new SelectBox(5 + textWidth, 5 + y, panel.getSize.x - 10 - textWidth, 20)
+    elements.foreach(selectBox.addElement)
+    selectBox.setVisibleCount(Math.min(elements.length, 5))
+    selectBox.setElementHeight(20)
+    selectBox.setSelected(0, false)
+    selectBox.addSelectBoxChangeSelectionEventListener(new SelectBoxChangeSelectionEventListener {
+      override def process(event: SelectBoxChangeSelectionEvent[_ <: SelectBox]): Unit = selectCb(event.getNewValue)
+    })
+    panel.add(selectBox)
+    (panel, selectBox)
   }
 }

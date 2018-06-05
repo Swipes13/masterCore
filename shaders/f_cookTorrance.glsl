@@ -1,11 +1,14 @@
 #version 400 core
 
 uniform sampler2D texture_diffuse;
+uniform samplerCube cubemap;
 
 in vec3 norm;
-in vec2 tutv;
+in vec3 texNormal;
 in vec3 light;
 in vec3 view;
+in vec3 wpos;
+in vec3 center;
 
 out vec4 out_color;
 
@@ -41,7 +44,8 @@ float cookTorrance(vec3 _normal, vec3 _light, vec3 _view, float roughness_val) {
 void main() {
     float r = 0.1;
     float rs = cookTorrance(norm, light, view, r);
-    vec3 vDiffuse = vec3(0.5, 0.2, 0.4);
+    vec3 vDiffuse = texture(cubemap, texNormal).xyz;
     vec3 vSpecular = vec3(1, 1, 1);
+
     out_color = /*vAmbient + */ vec4(dot(norm, view) * (vDiffuse + vSpecular * rs), 1);
 }

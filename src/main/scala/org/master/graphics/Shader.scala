@@ -3,6 +3,7 @@ package org.master.graphics
 import org.master.graphics
 import org.lwjgl.opengl.GL20._
 import org.lwjgl.opengl.GL11._
+import org.lwjgl.opengl.GL32._
 import scala.io.Source
 
 /**
@@ -14,6 +15,7 @@ object ShaderType extends Enumeration {
   val None = 0
   val Vertex: graphics.ShaderType.Value = Value(GL_VERTEX_SHADER)
   val Fragment: graphics.ShaderType.Value = Value(GL_FRAGMENT_SHADER)
+  val Geometry: graphics.ShaderType.Value = Value(GL_GEOMETRY_SHADER)
 }
 
 class Shader(val `type`: ShaderType.Value) {

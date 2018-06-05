@@ -7,6 +7,7 @@ object ShaderProgramType extends Enumeration {
   type ShaderProgramType = Value
   val CookTorranceForward: ShaderProgramType.Value = Value(0)
   val Simple: ShaderProgramType.Value = Value(1)
+  val QuasarResult: ShaderProgramType.Value = Value(2)
 }
 
 class ShaderProgram(val shaders: Array[Shader]) {
@@ -19,6 +20,7 @@ class ShaderProgram(val shaders: Array[Shader]) {
   def validate(): Unit = ShaderProgram.check(glValidateProgram(id), id, GL_VALIDATE_STATUS, "validate shader error. ")
   def link(): Unit = ShaderProgram.check(glLinkProgram(id), id, GL_LINK_STATUS, "link shader error. ")
   def addVao(vao: Vao): Unit = _vaos = _vaos :+ vao
+  def removeVao(vao: Vao): Unit = _vaos = _vaos.filter(_ != vao)
   def prepareUniforms(uniforms: Array[String]): Unit = uniformLocations = uniforms.map(u => (u, glGetUniformLocation(id, u))).toMap[String, Int]
   def updateLocationForUniform(u: Uniform): Uniform = u.withLocation(this.uniformLocations.getOrElse(u.name, 0))
 }

@@ -33,7 +33,7 @@ object ProjectionType extends Enumeration {
 }
 
 class ProjectionMatrix(val `type`: ProjectionType.Value) extends Matrix4fU {}
-class OrthoProjectionMatrix(val size: Vector2f, val zNear: Float, val zFar: Float, var zoomCf: Float = 1.0f)
+class OrthoProjectionMatrix(val width: Float, val height: Float, val zNear: Float, val zFar: Float, var zoomCf: Float = 1.0f)
   extends ProjectionMatrix(ProjectionType.Orthographical) {
   Matrix4fU.orthographical(this)
 
@@ -50,10 +50,10 @@ object Matrix4fU {
     ret
   }
   def orthographical(pm: OrthoProjectionMatrix): OrthoProjectionMatrix = {
-    val left = -pm.size.x / 2.0f
-    val right = pm.size.x / 2.0f
-    val top = -pm.size.y / 2.0f
-    val bottom = pm.size.y / 2.0f
+    val left = -pm.width / 2.0f
+    val right = pm.width / 2.0f
+    val top = -pm.height / 2.0f
+    val bottom = pm.height / 2.0f
     pm.setOrtho(left * pm.zoomCf, right * pm.zoomCf, bottom * pm.zoomCf, top * pm.zoomCf, pm.zNear, pm.zFar)
     pm
   }

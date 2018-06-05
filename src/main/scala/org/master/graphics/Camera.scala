@@ -4,47 +4,72 @@ import org.joml.{Matrix4f, Vector3f}
 import org.master.input.{Input, KeyType, MouseButtonType, MousePos}
 
 class Camera extends Matrix4fU {
-  def this(name: String) = {
-    this()
-    withName(name)
-  }
+  def this(name: String) = { this(); withName(name) }
 
-  val deltaCf = 0.01f
   val view = new Float3U(0, 0, -1); view.withName("viewDir")
-
-  var position = new Vector3f(0, 0, -1)
-  var look = new Vector3f(0, 0, -1)
-  var right = new Vector3f(1, 0, 0)
-  var up = new Vector3f(0, 1, 0)
   var speed = 1.0f
 
-  def update(): Unit = { // TODO: optimize with dirty flag
-    look.normalize()
-    look.cross(right, up).normalize()
-    up.cross(look, right).normalize() // TODO: remove normalize and check
+  private var _look = new Vector3f(0, 0, -1)
+  private var _pos = new Vector3f(0, 0, -1)
+  private var _right = new Vector3f(1, 0, 0)
+  private var _up = new Vector3f(0, 1, 0)
 
-    m00(right.x); m10(right.y); m20(right.z); m30(-position.dot(right))
-    m01(up.x);    m11(up.y);    m21(up.z);    m31(-position.dot(up))
-    m02(look.x);  m12(look.y);  m22(look.z);  m32(-position.dot(look))
+  private var _dirty = true
 
-    view.update(look.negate(new Vector3f()))
+  def update(): Unit = dirtyCheck {
+    _look.normalize()
+    _look.cross(_right, _up).normalize()
+    _up.cross(_look, _right).normalize()
+
+    m00(_right.x); m10(_right.y); m20(_right.z); m30(-_pos.dot(_right))
+    m01(_up.x);    m11(_up.y);    m21(_up.z);    m31(-_pos.dot(_up))
+    m02(_look.x);  m12(_look.y);  m22(_look.z);  m32(-_pos.dot(_look))
+
+    view.update(_look.negate(new Vector3f()).normalize(new Vector3f()))
   }
 
   def hasMouseFocus: Boolean = Input.mouse.buttons(MouseButtonType.Right).pushed
 
-  def walk(sign: Float): Unit = position.add(look.mul(sign * deltaCf* speed, new Vector3f()))
-  def strafe(sign: Float): Unit = position.add(right.mul(sign * deltaCf * speed, new Vector3f()))
+  def walk(sign: Float): Unit = dirty { _pos.add(_look.mul(sign * Camera.DeltaCf * speed, new Vector3f())) }
+  def strafe(sign: Float): Unit = dirty { _pos.add(_right.mul(sign * Camera.DeltaCf * speed, new Vector3f())) }
 
-  def pitch(delta: Double): Unit = if (hasMouseFocus) {
-    val r = new Matrix4f().rotation(delta.toFloat, right)
-    r.transformDirection(up)
-    r.transformDirection(look)
+  def pitch(delta: Double): Unit = if (hasMouseFocus) dirty {
+    val r = new Matrix4f().rotation(delta.toFloat, _right)
+    r.transformDirection(_up)
+    r.transformDirection(_look)
   }
-  def rotY(delta: Double): Unit = if (hasMouseFocus) {
+  def rotY(delta: Double): Unit = if (hasMouseFocus) dirty {
     val r = new Matrix4f().rotationY(delta.toFloat)
-    r.transformDirection(right)
-    r.transformDirection(up)
-    r.transformDirection(look)
+    r.transformDirection(_right)
+    r.transformDirection(_up)
+    r.transformDirection(_look)
   }
-  def withPosition(pos: Vector3f): Camera = { position = pos; this }
+  def withPosition(pos: Vector3f): Camera = { _pos = pos; this }
+  def topView(): Camera = {
+    dirty { withSettings(p = new Vector3f(0, 2, 0),  l = new Vector3f(0, 1, 0), r = new Vector3f(-1, 0, 0), u = new Vector3f(0, 0, -1)) }
+    this
+  }
+  def frontView(): Camera = {
+    dirty { withSettings(p = new Vector3f(0, 0, -2), l = new Vector3f(0, 0, -1), r = new Vector3f(-1, 0, 0), u = new Vector3f(0, 1, 0)) }
+    this
+  }
+  def rightView(): Camera = {
+    dirty { withSettings(p = new Vector3f(-2, 0, 0), l = new Vector3f(-1, 0, 0), r = new Vector3f(0, 0, 1), u = new Vector3f(0, 1, 0)) }
+    this
+  }
+  def withSettings(p: Vector3f, l: Vector3f, r: Vector3f, u: Vector3f = new Vector3f()): Camera = {
+    dirty {
+      _pos = p
+      _look = l
+      _right = r
+      _up = u
+    }
+    this
+  }
+  def dirtyCheck(block: => Unit): Unit = if (_dirty) { block; _dirty = false }
+  def dirty(block: => Unit): Unit = { block; _dirty = true }
+}
+
+object Camera {
+  val DeltaCf = 0.01f
 }

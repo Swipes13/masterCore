@@ -15,7 +15,7 @@ class Mesh(val fileName: String) {
   var vaos = Map.empty[Int, Vao]
 
   def initVaos(withSaveToVaoFile: Boolean): Unit = {
-    val vertexesWithIndex = nodes.map(node => (node.index, new VertexElement(node.x, node.y, node.z))).toMap
+    val vertexesWithIndex = nodes.map(node => (node.index, new VertexElement(node.x, node.y, node.z).withType(VEType.Position))).toMap
     physicalNames.foreach { case (physicalIndex, _) =>
       if (physicalIndex == 1) vaos += (physicalIndex -> createVaoForPhysicalName(physicalIndex, vertexesWithIndex, withSaveToVaoFile))
     }
@@ -30,16 +30,25 @@ class Mesh(val fileName: String) {
         case _ => println(s"unsupported mesh element type: ${element.`type`}"); Array.empty[Int]
       }
     }
+
+    val center = BBox.createFromVertexElement(vertexesWithIndex.values.toSeq).center
     var vertexes = indexesWithCheck.sliding(3, 3).flatMap { tri => val triPoints = tri.map(t => vertexesWithIndex(t))
       val (a, b, c) = (triPoints.head, triPoints(1), triPoints(2))
 
       val ab = b.toVector3f.sub(a.toVector3f, new Vector3f())
       val ac = c.toVector3f.sub(a.toVector3f, new Vector3f())
       val n = ac.cross(ab, new Vector3f()).normalize()
+
+      val texCoords = Seq(
+        a.toVector3f.sub(center, new Vector3f()).normalize(),
+        b.toVector3f.sub(center, new Vector3f()).normalize(),
+        c.toVector3f.sub(center, new Vector3f()).normalize()
+      ).map(new VertexElement(_).withType(VEType.TexCoords))
+
       List(
-        new Vertex(a, new VertexElement(n), new VertexElement(0, 0)),
-        new Vertex(b, new VertexElement(n), new VertexElement(0, 0)),
-        new Vertex(c, new VertexElement(n), new VertexElement(0, 0))
+        new Vertex(a, new VertexElement(n).withType(VEType.Normal), texCoords(0)),
+        new Vertex(b, new VertexElement(n).withType(VEType.Normal), texCoords(1)),
+        new Vertex(c, new VertexElement(n).withType(VEType.Normal), texCoords(2))
       )
     }.zipWithIndex.toArray
     var indexes = vertexes.indices.map((_, false)).toArray
@@ -59,8 +68,33 @@ class Mesh(val fileName: String) {
     val v = vertexes.map(_._1)
     val i = indexes.map(_._1)
 
-    if (withSaveToVaoFile) Vao.saveToFile(s"${fileName}_${physicalNames(physicalIndex).name}", v, i)
-    Vao.createInterleaved(DrawType.Triangles, v, i)
+    val filteredIndexes = removeTriReps(v, i)
+
+    if (withSaveToVaoFile) Vao.saveToFile(s"${fileName}_${physicalNames(physicalIndex).name}", v, filteredIndexes)
+    Vao.createInterleaved(DrawType.Triangles, v, filteredIndexes)
+  }
+
+  def removeTriReps(vertexes: Seq[Vertex], indexes: Seq[Int]): Array[Int] = org.master.core.Utils.logging() {
+    var filtered: Array[Int] = null
+    org.master.core.Utils.deltaTime {
+      val triMap = indexes.sliding(3, 3).map((_, 0)).toArray
+      filtered = triMap.filter { case (tri, count) =>
+        triMap.count { case (t, c) =>
+          val (v1, v2, v3) = (vertexes(t(0)).position, vertexes(t(1)).position, vertexes(t(2)).position)
+          val (p1, p2, p3) = (vertexes(tri(0)).position, vertexes(tri(1)).position, vertexes(tri(2)).position)
+
+          (v1 == p1 && v2 == p2 && v3 == p3) ||
+          (v1 == p1 && v2 == p3 && v3 == p2) ||
+          (v1 == p2 && v2 == p1 && v3 == p3) ||
+          (v1 == p2 && v2 == p3 && v3 == p1) ||
+          (v1 == p3 && v2 == p1 && v3 == p2) ||
+          (v1 == p3 && v2 == p2 && v3 == p1)
+
+        } == 1
+      }.flatMap(_._1)
+
+    }
+    filtered
   }
 }
 
