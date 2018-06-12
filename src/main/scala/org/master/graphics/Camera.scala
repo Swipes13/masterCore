@@ -6,7 +6,7 @@ import org.master.input.{Input, KeyType, MouseButtonType, MousePos}
 class Camera extends Matrix4fU {
   def this(name: String) = { this(); withName(name) }
 
-  val view = new Float3U(0, 0, -1); view.withName("viewDir")
+  val view = Float3U(0, 0, -1); view.withName("viewDir")
   var speed = 1.0f
 
   private var _look = new Vector3f(0, 0, -1)
@@ -46,15 +46,15 @@ class Camera extends Matrix4fU {
   }
   def withPosition(pos: Vector3f): Camera = { _pos = pos; this }
   def topView(): Camera = {
-    dirty { withSettings(p = new Vector3f(0, 2, 0),  l = new Vector3f(0, 1, 0), r = new Vector3f(-1, 0, 0), u = new Vector3f(0, 0, -1)) }
+    dirty { withSettings(p = new Vector3f(1.34f, 2, 1),  l = new Vector3f(0, 1, 0), r = new Vector3f(-1, 0, 0), u = new Vector3f(0, 0, -1)) }
     this
   }
   def frontView(): Camera = {
-    dirty { withSettings(p = new Vector3f(0, 0, -2), l = new Vector3f(0, 0, -1), r = new Vector3f(-1, 0, 0), u = new Vector3f(0, 1, 0)) }
+    dirty { withSettings(p = new Vector3f(1.31f, 0.5f, -2), l = new Vector3f(0, 0, -1), r = new Vector3f(-1, 0, 0), u = new Vector3f(0, 1, 0)) }
     this
   }
   def rightView(): Camera = {
-    dirty { withSettings(p = new Vector3f(-2, 0, 0), l = new Vector3f(-1, 0, 0), r = new Vector3f(0, 0, 1), u = new Vector3f(0, 1, 0)) }
+    dirty { withSettings(p = new Vector3f(-2, 0.5f, 1.05f), l = new Vector3f(-1, 0, 0), r = new Vector3f(0, 0, 1), u = new Vector3f(0, 1, 0)) }
     this
   }
   def withSettings(p: Vector3f, l: Vector3f, r: Vector3f, u: Vector3f = new Vector3f()): Camera = {

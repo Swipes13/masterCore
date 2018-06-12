@@ -6,7 +6,7 @@ import scalaj.http.{Http, HttpResponse}
 import org.json4s.{DefaultFormats, Extraction, JObject}
 import org.json4s.jackson.JsonMethods._
 import org.json4s.JsonDSL._
-import org.liquidengine.legui.component.{CheckBox, Slider}
+import org.liquidengine.legui.component.{CheckBox, ProgressBar, Slider}
 import org.master.graphics.quasar.QuasarResultView
 import org.master.graphics.ui.QuasarColorScale
 import org.master.graphics.{VEType, VertexElement}
@@ -37,6 +37,10 @@ class QuasarClient() {
   var colorScale = QuasarColorScale.classic()
   var timeValueSlider: Option[Slider] = None
   var autoPlayCheckbox: Option[CheckBox] = None
+  var requestProgress: Option[ProgressBar] = None
+
+  var requestStarted = false
+  var requestFinished = false
 
   def load(projectPath: String, solutionPath: String): Int = {
     val json = compact(render(("ProjectPath" -> projectPath) ~ ("SolPath" -> solutionPath)))
@@ -95,6 +99,7 @@ class QuasarClient() {
   }
 
   def updateResultView(points: Array[Vector3f], timeCounts: Int): Unit = {
+    requestStarted = true
     val (startT, endT) = (0, 100)
     val step = (endT - startT) / timeCounts.toDouble
     resultView.positions = points.map(new VertexElement(_).withType(VEType.Position))
@@ -103,6 +108,7 @@ class QuasarClient() {
     for (i <- 0 to timeCounts) {
       val t = startT + step * i
       val answer = postPoints(points, t)
+      requestProgress.foreach(_.setValue(i / timeCounts.toFloat * 100))
       if (!answer._2) {
         resultView.clear()
         return
@@ -110,6 +116,9 @@ class QuasarClient() {
       resultView.times :+= t
       resultView.data(t) = answer._1.toArray
     }
+    requestFinished = true
+  }
+  def afterUpdateResultView(): Unit = {
     resultView.updateMinMax()
     resultView.updateVertexes()
   }

@@ -34,12 +34,11 @@ class QuasarResultView {
 
     val (leftV, rightV) = (data(left), data(right))
 
-    var test = Array.empty[Float]
     leftV.zip(rightV).zip(positions).map { case((l, r), point) =>
       val resultVec = new VertexElement(QuasarColorScale.lerp(l.toVector3f, r.toVector3f, a.toFloat))
       val resultA = (resultVec.mag - min) / delta
       var v = Array(point, new VertexElement(QuasarClient.colorScale.getColor(resultA)).withType(VEType.Color))
-      if (QuasarClient.resultTypeSelected == QuasarResultType.Vector) v = v :+ resultVec.withType(VEType.QuasarVector)
+      if (QuasarClient.resultTypeSelected == QuasarResultType.Vector) v = v :+ new VertexElement(resultVec.toVector3f.normalize()).withType(VEType.QuasarVector)
       Vertex(v:_*)
     }
   }
@@ -73,16 +72,24 @@ class QuasarResultView {
 
   var dtCounterLocker = 0.0
   var dtCounter = 0.0
-  def update(dt: Double, forced: Boolean = false): Unit = if (vao.nonEmpty) {
-    if (forced) { // TODO: remove auto-play
-      autoPlay = false
-      dtCounter = dt
-      QuasarClient.autoPlayCheckbox.foreach(_.setChecked(autoPlay))
-    } else if (autoPlay) {
-      dtCounter += dt
-      QuasarClient.timeValueSlider.foreach(_.setValue(dtCounter.toFloat))
-    } else return
-    val timeConverted = dtCounter //(dtCounter / animationTime) * 100
-    vbo.updateData(Vbo.prepareBuffer(getVertexes(timeConverted)))
+  def update(dt: Double, forced: Boolean = false): Unit = {
+    if (QuasarClient.requestStarted && QuasarClient.requestFinished) {
+      QuasarClient.requestStarted = false
+      QuasarClient.requestFinished = false
+      QuasarClient.afterUpdateResultView()
+    }
+    if (!QuasarClient.requestStarted && vao.nonEmpty) {
+      if (forced) { // TODO: remove auto-play
+        autoPlay = false
+        dtCounter = dt
+        QuasarClient.autoPlayCheckbox.foreach(_.setChecked(autoPlay))
+      } else if (autoPlay) {
+        dtCounter += dt
+        QuasarClient.timeValueSlider.foreach(_.setValue(dtCounter.toFloat))
+      } else return
+      val timeConverted = dtCounter //(dtCounter / animationTime) * 100
+      vbo.updateData(Vbo.prepareBuffer(getVertexes(timeConverted)))
+    }
   }
+
 }

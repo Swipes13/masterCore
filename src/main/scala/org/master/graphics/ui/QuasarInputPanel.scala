@@ -15,11 +15,14 @@ import org.master.http_client.{Point, QuasarClient, QuasarResultType}
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.{Future, Promise}
+import scala.util.{Failure, Success}
 import scala.util.control.Exception.allCatch
 
 class QuasarInputPanel(x: Float, y: Float, width: Float) extends Panel(x, y, width, QuasarInputPanel.Height) {
   getStyle.getBackground.setColor(QuasarInputPanel.PanelColor)
   getStyle.setBorder(new SimpleLineBorder(QuasarInputPanel.BorderColor, QuasarInputPanel.BorderWidth))
+  add(new VideoPanel(5, 500, 400))
 
   private var _resultNameSelectBox: SelectBox = _
   private var _areaPanel: AreaPanel = _
@@ -50,7 +53,7 @@ class QuasarInputPanel(x: Float, y: Float, width: Float) extends Panel(x, y, wid
 }
 
 object QuasarInputPanel {
-  val Height = 500.0f
+  val Height = 1000.0f
   val BorderWidth = 2
   val PanelColor = new Vector4f(237 / 255.0f, 237 / 255.0f, 237 / 255.0f, 1)
   val BorderColor = new Vector4f(127 / 255.0f, 127 / 255.0f, 127 / 255.0f, 1)
@@ -60,6 +63,7 @@ class AreaPanel(x: Float, y: Float, width: Float) extends Panel(x, y, width, Are
   var inputs: ArrayBuffer[TextInput] = ArrayBuffer.empty[TextInput]
   var timeSlider: Slider = _
   var autoPlayCheckbox: CheckBox = _
+  var requestProgress: ProgressBar = _
 
   def enable(): Unit = inputs.foreach(_.setEditable(true))
   def disable(): Unit = inputs.foreach(_.setEditable(false))
@@ -73,13 +77,15 @@ class AreaPanel(x: Float, y: Float, width: Float) extends Panel(x, y, width, Are
   }
 
   def initView(): Unit = {
+    val minstr = Array("-0.25","-0.25","-0.25")
+    val maxstr = Array("4","1","3.25")
     for (i <- Range(0, 2)) {
       val label = new Label(5, 5 + i * 30, 40, 20)
       label.getTextState.setText(if (i == 0) "min:" else "max:")
       this.add(label)
       for (j <- Range(0, 3)) {
         inputs += new TextInput(55 + j * 55, 5 + i * 30, 50, 20)
-        inputs.last.getTextState.setText(if (i == 0) "0" else "1")
+        inputs.last.getTextState.setText(if (i == 0) minstr(j) else maxstr(j))
         this.add(inputs.last)
       }
     }
@@ -88,7 +94,7 @@ class AreaPanel(x: Float, y: Float, width: Float) extends Panel(x, y, width, Are
       val label = new Label(5, 5 + 80, 50, 20); this.add(label)
       label.getTextState.setText("point density:")
       inputs += new TextInput(120, 5 + 80, 70, 20)
-      inputs.last.getTextState.setText("7")
+      inputs.last.getTextState.setText("12")
       this.add(inputs.last)
     }
     { // time density: [7]
@@ -126,7 +132,7 @@ class AreaPanel(x: Float, y: Float, width: Float) extends Panel(x, y, width, Are
     }
 
     val buttonWidth = 100
-    val buttonCompute = new Button(width - buttonWidth - 10, AreaPanel.Height - 45, buttonWidth, 25)
+    val buttonCompute = new Button(width - buttonWidth - 10, AreaPanel.Height - 105, buttonWidth, 25)
     buttonCompute.getTextState.setText("Get Result!")
     buttonCompute.getListenerMap.addListener(classOf[MouseClickEvent[_ <: Component]], new MouseClickEventListener {
       override def process(event: MouseClickEvent[_ <: Component]): Unit = {
@@ -144,7 +150,10 @@ class AreaPanel(x: Float, y: Float, width: Float) extends Panel(x, y, width, Are
             for (i <- 0 until density; j <- 0 until density; k <- 0 until density) {
               points += min.add(step.mul(new Vector3f(i, j, k), new Vector3f()))
             }
-            QuasarClient.updateResultView(points.toArray, timeDensity)
+            import scala.concurrent.ExecutionContext.Implicits.global
+            val inverseFuture : Future[Unit] = Future {
+              QuasarClient.updateResultView(points.toArray, timeDensity)
+            }
           } else {
             // TODO: Show error input label
           }
@@ -152,6 +161,17 @@ class AreaPanel(x: Float, y: Float, width: Float) extends Panel(x, y, width, Are
       }
     })
     this.add(buttonCompute)
+
+    {
+      val label = new Label(5, AreaPanel.Height - 45, 50, 20); this.add(label)
+      label.getTextState.setText("request progress:")
+      val requestPgBarW = 200
+      requestProgress = new ProgressBar(width - requestPgBarW - 10, AreaPanel.Height - 45, requestPgBarW, 25)
+      requestProgress.setValue(0)
+      this.add(requestProgress)
+      QuasarClient.requestProgress = Some(requestProgress)
+    }
+
   }
 
   def checkInputsDouble(): Boolean = inputs.map(_.getTextState.getText).forall(text => text.nonEmpty && (allCatch opt text.replace(',', '.').toDouble).isDefined)
@@ -162,5 +182,5 @@ class AreaPanel(x: Float, y: Float, width: Float) extends Panel(x, y, width, Are
 }
 
 object AreaPanel {
-  val Height = 280
+  val Height = 360
 }

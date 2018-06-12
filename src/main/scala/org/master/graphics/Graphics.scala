@@ -11,16 +11,19 @@ import org.joml.{Vector2f, Vector3f, Vector4f}
 import org.lwjgl.opengl.GLUtil
 import org.master.core.{CoreUnit, Window}
 import org.master.core
-import org.master.graphics.ui.Gui
+import org.master.graphics.ui.{Gui, QuasarInputPanel}
 import org.master.http_client.QuasarClient
 import org.lwjgl.opengl.GL11._
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
 import javax.imageio.ImageIO
 
+import org.jcodec.common.model.{ColorSpace, Picture}
+
 import scala.collection.mutable.ArrayBuffer
 
 class Graphics extends CoreUnit {
+  var updateFuncs = Array.empty[(Double) => Unit]
   private var _shaderPrograms = Map.empty[ShaderProgramType.Value, ShaderProgram]
   private var _textures = Array.empty[Texture2D]
   private var _cubeMaps = Array.empty[CubeMap]
@@ -54,7 +57,6 @@ class Graphics extends CoreUnit {
     _shaderPrograms.foreach(s => initGuiRts(s._2))
 
     QuasarClient.init()
-
     true
   }
 
@@ -102,23 +104,29 @@ class Graphics extends CoreUnit {
       new Camera("viewMatrix").topView(),
       new Camera("viewMatrix").rightView(),
       new Camera("viewMatrix").withSettings(
-        p = new Vector3f(0, 2, 0),
-        l = new Vector3f(0, 1, 0),
-        r = new Vector3f(1, 0, 0),
-        u = new Vector3f(0, 0, 1)
+        p = new Vector3f(3.851E-1f,  1.658E+0f, -4.098E-1f),
+        l = new Vector3f(-4.039E-1f,  7.078E-1f, -5.796E-1f),
+        r = new Vector3f(8.205E-1f,  2.682E-7f, -5.717E-1f),
+        u = new Vector3f(-4.047E-1f, -7.064E-1f, -5.807E-1f)
       )
     )
 
     val (near, far) = (0.01f, 100)
     _gui.rtContexts.zipWithIndex.foreach { case(context, i) =>
       val perspective = i == 3
+      val orthoZoomCf = Float1U(1f); orthoZoomCf.withName("orthoZoomCf")
       val pm = if (perspective) Matrix4fU.perspective(context.size.x, context.size.y, 60, 0.01f, 100)
-      else new OrthoProjectionMatrix(context.size.x, context.size.y, near, far, 0.01f)
+      else {
+        orthoZoomCf.v1 = 0.006f
+        new OrthoProjectionMatrix(context.size.x, context.size.y, near, far, orthoZoomCf)
+      }
 
       pm.withName("projectionMatrix")
       context.setCamera(cameras(i))
       context.setProjectionMatrix(pm)
       uniforms.foreach(context.addUniform)
+      context.addUniform(orthoZoomCf)
+
       _rtRenderFuncs += (context, (delta, context) => {
         _textures.foreach(Texture2D.bind)
         if (perspective) { // perspective
@@ -163,8 +171,22 @@ class Graphics extends CoreUnit {
 //    }
 
     _mainFrameBuffer.draw(_gui.update)
+    updateFuncs.foreach(_(dt))
   }
 
+  override def destroy(): Unit = {
+    ShaderProgram.clear()
+    _shaderPrograms.foreach(s => ShaderProgram.clear(s._2))
+    _gui.destroy()
+  }
+
+}
+
+object Graphics extends Graphics() {
+  def clearFrameBuffer(flags: Int, color: Vector4f): Unit = {
+    glClearColor(color.x, color.y, color.y, color.z)
+    glClear(flags)
+  }
   def saveRtToFile(fileName: String): Boolean = {
     GL11.glReadBuffer(GL11.GL_FRONT)
     val width = Window.innerSize.width
@@ -190,19 +212,26 @@ class Graphics extends CoreUnit {
 
     ImageIO.write(image, format, file)
   }
+  def saveRtToRecorder(sr: ScreenRecorder, dt: Double): Unit = {
+    GL11.glReadBuffer(GL11.GL_FRONT)
+    val width = Window.innerSize.width * 2
+    val height = Window.innerSize.height * 2
+    val bpp = 4
+    // Assuming a 32-bit display with a byte each for red, green, blue, and alpha.
+    val buffer = BufferUtils.createByteBuffer(width * height * bpp)
+    GL11.glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer)
+    val image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR) //TYPE_INT_RGB
 
-  override def destroy(): Unit = {
-    ShaderProgram.clear()
-    _shaderPrograms.foreach(s => ShaderProgram.clear(s._2))
-    _gui.destroy()
-  }
-
-}
-
-object Graphics extends Graphics() {
-  def clearFrameBuffer(flags: Int, color: Vector4f): Unit = {
-    glClearColor(color.x, color.y, color.y, color.z)
-    glClear(flags)
+    for (x <- 0 until width) {
+      for (y <- 0 until height) {
+        val i = (x + (width * y)) * bpp
+        val r = buffer.get(i) & 0xFF
+        val g = buffer.get(i + 1) & 0xFF
+        val b = buffer.get(i + 2) & 0xFF
+        image.setRGB(x, height - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b)
+      }
+    }
+    sr.addFrame(image, dt)
   }
 }
 

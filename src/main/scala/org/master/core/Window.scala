@@ -61,7 +61,7 @@ class Window(val fullscreen: Boolean) extends CoreUnit { // TODO: write correct 
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, org.lwjgl.opengl.GL11.GL_TRUE)
     glfwWindowHint(GLFW_SAMPLES, 4)
 
-    _size = getMonitorSize  // Size(1200, 600)//
+    _size = Size(1400, 600) // getMonitorSize  // Size(1200, 600)//
     println(_size)
     val fsFlag = if (fullscreen) glfwGetPrimaryMonitor() else NULL
     _ptr = glfwCreateWindow(_size.width, _size.height, "Core", fsFlag, NULL)
